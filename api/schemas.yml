@@ -1,0 +1,147 @@
+components:
+  schemas:
+    email:
+      type: string
+      format: email
+      pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+
+    password:
+      type: string
+      format: password
+      pattern: "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,25}$"
+
+    userId:
+      type: string
+      pattern: uuid
+
+    chatId:
+      type: integer
+
+    roleId:
+      type: integer
+
+    messageId:
+      type: integer
+
+    user:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/userId"
+        username:
+          type: string
+        bio:
+          type: string
+
+    userInput:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+        bio:
+          type: string
+      required:
+        - username
+        - bio
+
+    chat:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/chatId"
+        name:
+          type: string
+        description:
+          type: string
+
+    chatInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 40
+        description:
+          type: string
+      required:
+        - name
+        - description
+
+    member:
+      type: object
+      properties:
+        user_id:
+          $ref: "#/components/schemas/userId"
+        role_id:
+          type: integer
+
+    role:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/roleId"
+        name:
+          type: string
+        can_ban_users:
+          type: boolean
+        can_edit_roles:
+          type: boolean
+        can_edit_messages:
+          type: boolean
+        can_get_join_code:
+          type: boolean
+        can_edit_chat_info:
+          type: boolean
+        can_delete_chat:
+          type: boolean
+
+    roleInput:
+      type: object
+      properties:
+        name:
+          type: string
+        can_ban_users:
+          type: boolean
+        can_edit_roles:
+          type: boolean
+        can_edit_messages:
+          type: boolean
+        can_get_join_code:
+          type: boolean
+        can_edit_chat_info:
+          type: boolean
+        can_delete_chat:
+          type: boolean
+      required:
+        - name
+        - can_ban_users
+        - can_edit_messages
+        - can_get_join_code
+        - can_edit_chat_info
+        - can_delete_chat
+
+    message:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/messageId"
+        sender_id:
+          type: string
+          pattern: uuid
+        message:
+          type: string
+        edited:
+          type: boolean
+        send_timestamp:
+          type: integer
+
+    messageInput:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+      required:
+        - message

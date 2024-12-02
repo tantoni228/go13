@@ -128,49 +128,6 @@ paths:
           $ref: "#/components/responses/internalErrorResponse"
 
 components:
-  schemas:
-    email:
-      type: string
-      format: email
-      pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-
-    password:
-      type: string
-      format: password
-
-    userId:
-      type: string
-      pattern: uuid
-
-    chatId:
-      type: integer
-
-    messageId:
-      type: integer
-
-    message:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/messageId"
-        sender_id:
-          type: string
-          pattern: uuid
-        message:
-          type: string
-        edited:
-          type: boolean
-        send_timestamp:
-          type: integer
-
-    messageInput:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
-
   responses:
     invalidInputResponse:
       description: Invalid request parameters or body
@@ -202,7 +159,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/message"
+            $ref: "./schemas.yml#/components/schemas/message"
 
     messagesResponse:
       description: messages response
@@ -211,14 +168,14 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/message"
+              $ref: "./schemas.yml#/components/schemas/message"
 
   parameters:
     chatIdInQuery:
       name: chatId
       in: query
       schema:
-        $ref: "#/components/schemas/chatId"
+        $ref: "./schemas.yml#/components/schemas/chatId"
       description: chat id
       required: true
 
@@ -226,7 +183,7 @@ components:
       name: messageId
       in: path
       schema:
-        $ref: "#/components/schemas/messageId"
+        $ref: "./schemas.yml#/components/schemas/messageId"
       required: true
       description: "message id"
 
@@ -252,10 +209,11 @@ components:
   requestBodies:
     messageBody:
       description: message body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/messageInput"
+            $ref: "./schemas.yml#/components/schemas/messageInput"
 
   securitySchemes:
     bearerAuth:

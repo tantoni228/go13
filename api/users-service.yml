@@ -136,41 +136,6 @@ paths:
           $ref: "#/components/responses/internalErrorResponse"
 
 components:
-  schemas:
-    email:
-      type: string
-      format: email
-      pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-
-    password:
-      type: string
-      format: password
-
-    userId:
-      type: string
-      pattern: uuid
-
-    user:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/userId"
-        username:
-          type: string
-        bio:
-          type: string
-
-    userInput:
-      type: object
-      properties:
-        username:
-          type: string
-        bio:
-          type: string
-      required:
-        - username
-        - bio
-
   responses:
     invalidInputResponse:
       description: Invalid request parameters or body
@@ -209,14 +174,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/user"
+            $ref: "./schemas.yml#/components/schemas/user"
 
   parameters:
     userId:
       name: userId
       in: path
       schema:
-        $ref: "#/components/schemas/userId"
+        $ref: "./schemas.yml#/components/schemas/userId"
       required: true
       description: "user id"
 
@@ -230,11 +195,11 @@ components:
             type: object
             properties:
               email:
-                $ref: "#/components/schemas/email"
+                $ref: "./schemas.yml#/components/schemas/email"
               username:
                 type: string
               password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - email
               - username
@@ -242,37 +207,40 @@ components:
 
     signInBody:
       description: sign in body
+      required: true
       content:
         application/json:
           schema:
             type: object
             properties:
               email:
-                $ref: "#/components/schemas/email"
+                $ref: "./schemas.yml#/components/schemas/email"
               password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - email
               - password
 
     userBody:
       description: user body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/userInput"
+            $ref: "./schemas.yml#/components/schemas/userInput"
 
     changePasswordBody:
       description: change password body
+      required: true
       content:
         application/json:
           schema:
             type: object
             properties:
               old_password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
               new_password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - old_password
               - new_password

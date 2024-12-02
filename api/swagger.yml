@@ -650,147 +650,6 @@ paths:
           $ref: "#/components/responses/internalErrorResponse"
 
 components:
-  schemas:
-    email:
-      type: string
-      format: email
-      pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-
-    password:
-      type: string
-      format: password
-
-    userId:
-      type: string
-      pattern: uuid
-
-    chatId:
-      type: integer
-
-    roleId:
-      type: integer
-
-    messageId:
-      type: integer
-
-    user:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/userId"
-        username:
-          type: string
-        bio:
-          type: string
-
-    userInput:
-      type: object
-      properties:
-        username:
-          type: string
-        bio:
-          type: string
-      required:
-        - username
-        - bio
-
-    chat:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/chatId"
-        name:
-          type: string
-        description:
-          type: string
-
-    chatInput:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-      required:
-        - name
-        - description
-
-    member:
-      type: object
-      properties:
-        user_id:
-          $ref: "#/components/schemas/userId"
-        role_id:
-          type: integer
-
-    role:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/roleId"
-        name:
-          type: string
-        can_ban_users:
-          type: boolean
-        can_edit_roles:
-          type: boolean
-        can_edit_messages:
-          type: boolean
-        can_get_join_code:
-          type: boolean
-        can_edit_chat_info:
-          type: boolean
-        can_delete_chat:
-          type: boolean
-
-    roleInput:
-      type: object
-      properties:
-        name:
-          type: string
-        can_ban_users:
-          type: boolean
-        can_edit_roles:
-          type: boolean
-        can_edit_messages:
-          type: boolean
-        can_get_join_code:
-          type: boolean
-        can_edit_chat_info:
-          type: boolean
-        can_delete_chat:
-          type: boolean
-      required:
-        - name
-        - can_ban_users
-        - can_edit_messages
-        - can_get_join_code
-        - can_edit_chat_info
-        - can_delete_chat
-
-    message:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/messageId"
-        sender_id:
-          type: string
-          pattern: uuid
-        message:
-          type: string
-        edited:
-          type: boolean
-        send_timestamp:
-          type: integer
-
-    messageInput:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
-
   responses:
     invalidInputResponse:
       description: Invalid request parameters or body
@@ -835,7 +694,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/user"
+            $ref: "./schemas.yml#/components/schemas/user"
 
     chatsResponse:
       description: Chats
@@ -844,14 +703,14 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/chat"
+              $ref: "./schemas.yml#/components/schemas/chat"
 
     chatResponse:
       description: chat info response
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/chat"
+            $ref: "./schemas.yml#/components/schemas/chat"
 
     joinCodeResponse:
       description: get join code response
@@ -870,14 +729,14 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/member"
+              $ref: "./schemas.yml#/components/schemas/member"
 
     roleResponse:
       description: role info response
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/role"
+            $ref: "./schemas.yml#/components/schemas/role"
 
     rolesResponse:
       description: get roles response
@@ -886,14 +745,14 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/role"
+              $ref: "./schemas.yml#/components/schemas/role"
 
     messageResponse:
       description: message response
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/message"
+            $ref: "./schemas.yml#/components/schemas/message"
 
     messagesResponse:
       description: messages response
@@ -902,14 +761,14 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/message"
+              $ref: "./schemas.yml#/components/schemas/message"
 
   parameters:
     userId:
       name: userId
       in: path
       schema:
-        $ref: "#/components/schemas/userId"
+        $ref: "./schemas.yml#/components/schemas/userId"
       required: true
       description: "user id"
 
@@ -917,7 +776,7 @@ components:
       name: chatId
       in: path
       schema:
-        $ref: "#/components/schemas/chatId"
+        $ref: "./schemas.yml#/components/schemas/chatId"
       required: true
       description: "chat id"
 
@@ -925,7 +784,7 @@ components:
       name: chatId
       in: query
       schema:
-        $ref: "#/components/schemas/chatId"
+        $ref: "./schemas.yml#/components/schemas/chatId"
       description: chat id
       required: true
 
@@ -933,7 +792,7 @@ components:
       name: roleId
       in: path
       schema:
-        $ref: "#/components/schemas/roleId"
+        $ref: "./schemas.yml#/components/schemas/roleId"
       required: true
       description: "role id"
 
@@ -941,7 +800,7 @@ components:
       name: messageId
       in: path
       schema:
-        $ref: "#/components/schemas/messageId"
+        $ref: "./schemas.yml#/components/schemas/messageId"
       required: true
       description: "message id"
 
@@ -974,11 +833,11 @@ components:
             type: object
             properties:
               email:
-                $ref: "#/components/schemas/email"
+                $ref: "./schemas.yml#/components/schemas/email"
               username:
                 type: string
               password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - email
               - username
@@ -986,50 +845,55 @@ components:
 
     signInBody:
       description: sign in body
+      required: true
       content:
         application/json:
           schema:
             type: object
             properties:
               email:
-                $ref: "#/components/schemas/email"
+                $ref: "./schemas.yml#/components/schemas/email"
               password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - email
               - password
 
     userBody:
       description: user body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/userInput"
+            $ref: "./schemas.yml#/components/schemas/userInput"
 
     changePasswordBody:
       description: change password body
+      required: true
       content:
         application/json:
           schema:
             type: object
             properties:
               old_password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
               new_password:
-                $ref: "#/components/schemas/password"
+                $ref: "./schemas.yml#/components/schemas/password"
             required:
               - old_password
               - new_password
 
     chatBody:
       description: chat body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/chatInput"
+            $ref: "./schemas.yml#/components/schemas/chatInput"
 
     joinChatBody:
       description: join chat body
+      required: true
       content:
         application/json:
           schema:
@@ -1042,29 +906,32 @@ components:
 
     setRoleBody:
       description: set role body
+      required: true
       content:
         application/json:
           schema:
             type: object
             properties:
               role_id:
-                $ref: "#/components/schemas/roleId"
+                $ref: "./schemas.yml#/components/schemas/roleId"
             required:
               - role_id
 
     roleBody:
       description: role body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/roleInput"
+            $ref: "./schemas.yml#/components/schemas/roleInput"
 
     messageBody:
       description: message body
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/messageInput"
+            $ref: "./schemas.yml#/components/schemas/messageInput"
 
   securitySchemes:
     bearerAuth:
