@@ -1,0 +1,656 @@
+openapi: "3.0.3"
+info:
+  title: Messanger chats-service api
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+
+security:
+  - bearerAuth: []
+
+paths:
+  /chats:
+    get:
+      summary: Get chats infos for user
+      operationId: listChats
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      responses:
+        "200":
+          $ref: "#/components/responses/chatsResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    post:
+      summary: Create new chat
+      operationId: createChat
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      requestBody:
+        $ref: "#/components/requestBodies/chatBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/chatResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/join:
+    post:
+      summary: Join chat
+      operationId: joinChat
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      requestBody:
+        $ref: "#/components/requestBodies/joinChatBody"
+      responses:
+        "204":
+          description: "you joined chat"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}:
+    get:
+      summary: Get chat info by id
+      operationId: getChatById
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      responses:
+        "200":
+          $ref: "#/components/responses/chatResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    put:
+      summary: Update chat info
+      operationId: updateChat
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      requestBody:
+        $ref: "#/components/requestBodies/chatBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/chatResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    delete:
+      summary: Delete chat by id
+      operationId: deleteChat
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      responses:
+        "204":
+          description: "chat deleted"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}/leave:
+    post:
+      summary: Leave chat by id
+      operationId: leaveChat
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      responses:
+        "204":
+          description: "you left chat"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}/join-code:
+    get:
+      summary: Get join code for chat by id
+      operationId: getJoinCode
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      responses:
+        "200":
+          $ref: "#/components/responses/joinCodeResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}/members:
+    get:
+      summary: get members for chat
+      operationId: listMembers
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+      responses:
+        "200":
+          $ref: "#/components/responses/membersResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}/members/{userId}/ban:
+    post:
+      summary: ban user in chat
+      operationId: banUser
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "204":
+          description: "user banned"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: chat or member not found
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /chats/{chatId}/members/{userId}/set-role:
+    post:
+      summary: Set role to user
+      operationId: setRole
+      x-ogen-operation-group: Chats
+      tags:
+        - chats
+      parameters:
+        - $ref: "#/components/parameters/chatId"
+        - $ref: "#/components/parameters/userId"
+      requestBody:
+        $ref: "#/components/requestBodies/setRoleBody"
+      responses:
+        "204":
+          description: role setted
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: chat or user not found
+        "409":
+          description: role with this id does not exists
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /roles:
+    get:
+      summary: get roles for chat
+      operationId: listRoles
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/chatIdInQuery"
+      responses:
+        "200":
+          $ref: "#/components/responses/rolesResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    post:
+      summary: Create role in Chat
+      operationId: createRole
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/chatIdInQuery"
+      requestBody:
+        $ref: "#/components/requestBodies/roleBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/roleResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /roles/check-access:
+    get:
+      summary: Check access to uri with method
+      operationId: CheckAccess
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - name: X-TARGET-URI
+          in: header
+          schema:
+            type: string
+          required: true
+          description: target uri
+        - name: X-TARGET-METHOD
+          in: header
+          schema:
+            type: string
+            enum:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+          required: true
+          description: target method
+      responses:
+        "204":
+          description: "access allowed"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: target uri does not exists
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+  /roles/{roleId}:
+    get:
+      summary: get role in Chat
+      operationId: getRoleById
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/roleId"
+        - $ref: "#/components/parameters/chatIdInQuery"
+      responses:
+        "200":
+          $ref: "#/components/responses/roleResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: chat or role not found
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    put:
+      summary: Update role in chat
+      operationId: updateRole
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/roleId"
+        - $ref: "#/components/parameters/chatIdInQuery"
+      requestBody:
+        $ref: "#/components/requestBodies/roleBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/roleResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: chat or role not found
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+    delete:
+      summary: Delete role in chat
+      operationId: deleteRole
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/roleId"
+        - $ref: "#/components/parameters/chatIdInQuery"
+      responses:
+        "204":
+          description: role deleted
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: chat or role not found
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
+components:
+  schemas:
+    email:
+      type: string
+      format: email
+      pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+
+    password:
+      type: string
+      format: password
+
+    userId:
+      type: string
+      pattern: uuid
+
+    chatId:
+      type: integer
+
+    roleId:
+      type: integer
+
+    chat:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/chatId"
+        name:
+          type: string
+        description:
+          type: string
+
+    chatInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - description
+
+    member:
+      type: object
+      properties:
+        user_id:
+          $ref: "#/components/schemas/userId"
+        role_id:
+          type: integer
+
+    role:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/roleId"
+        name:
+          type: string
+        can_ban_users:
+          type: boolean
+        can_edit_roles:
+          type: boolean
+        can_edit_messages:
+          type: boolean
+        can_get_join_code:
+          type: boolean
+        can_edit_chat_info:
+          type: boolean
+        can_delete_chat:
+          type: boolean
+
+    roleInput:
+      type: object
+      properties:
+        name:
+          type: string
+        can_ban_users:
+          type: boolean
+        can_edit_roles:
+          type: boolean
+        can_edit_messages:
+          type: boolean
+        can_get_join_code:
+          type: boolean
+        can_edit_chat_info:
+          type: boolean
+        can_delete_chat:
+          type: boolean
+      required:
+        - name
+        - can_ban_users
+        - can_edit_messages
+        - can_get_join_code
+        - can_edit_chat_info
+        - can_delete_chat
+
+  responses:
+    invalidInputResponse:
+      description: Invalid request parameters or body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+    unauthenticatedResponse:
+      description: Unauthenticated
+
+    unauthorizedResponse:
+      description: Access forbidden
+
+    internalErrorResponse:
+      description: Internal server error
+
+    userNotFoundResponse:
+      description: User not found
+
+    chatNotFoundResponse:
+      description: Chat not found
+
+    chatsResponse:
+      description: Chats
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/chat"
+
+    chatResponse:
+      description: chat info response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/chat"
+
+    joinCodeResponse:
+      description: get join code response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              join_code:
+                type: string
+
+    membersResponse:
+      description: get members response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/member"
+
+    roleResponse:
+      description: role info response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/role"
+
+    rolesResponse:
+      description: get roles response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/role"
+
+  parameters:
+    userId:
+      name: userId
+      in: path
+      schema:
+        $ref: "#/components/schemas/userId"
+      required: true
+      description: "user id"
+
+    chatId:
+      name: chatId
+      in: path
+      schema:
+        $ref: "#/components/schemas/chatId"
+      required: true
+      description: "chat id"
+
+    chatIdInQuery:
+      name: chatId
+      in: query
+      schema:
+        $ref: "#/components/schemas/chatId"
+      description: chat id
+      required: true
+
+    roleId:
+      name: roleId
+      in: path
+      schema:
+        $ref: "#/components/schemas/roleId"
+      required: true
+      description: "role id"
+
+  requestBodies:
+    chatBody:
+      description: chat body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/chatInput"
+
+    joinChatBody:
+      description: join chat body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              join_code:
+                type: string
+            required:
+              - join_code
+
+    setRoleBody:
+      description: set role body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              role_id:
+                $ref: "#/components/schemas/roleId"
+            required:
+              - role_id
+
+    roleBody:
+      description: role body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/roleInput"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
