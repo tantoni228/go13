@@ -304,13 +304,13 @@ paths:
       tags:
         - roles
       parameters:
-        - name: X-TARGET-URI
+        - name: X-Target-Uri
           in: header
           schema:
             type: string
           required: true
           description: target uri
-        - name: X-TARGET-METHOD
+        - name: X-Target-Method
           in: header
           schema:
             type: string
