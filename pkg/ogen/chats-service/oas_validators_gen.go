@@ -104,15 +104,8 @@ func (s *Member) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if value, ok := s.UserID.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
+		if err := s.UserID.Validate(); err != nil {
+			return err
 		}
 		return nil
 	}(); err != nil {

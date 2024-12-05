@@ -660,6 +660,8 @@ components:
             properties:
               message:
                 type: string
+            required:
+              - message
 
     unauthenticatedResponse:
       description: Unauthenticated
@@ -688,6 +690,8 @@ components:
             properties:
               token:
                 type: string
+            required:
+              - token
 
     userResponse:
       description: User info
@@ -721,6 +725,8 @@ components:
             properties:
               join_code:
                 type: string
+            required:
+              - join_code
 
     membersResponse:
       description: get members response
