@@ -49,16 +49,16 @@ func (*InternalErrorResponse) sendMessageRes()    {}
 func (*InternalErrorResponse) updateMessageRes()  {}
 
 type InvalidInputResponse struct {
-	Message OptString `json:"message"`
+	Message string `json:"message"`
 }
 
 // GetMessage returns the value of Message.
-func (s *InvalidInputResponse) GetMessage() OptString {
+func (s *InvalidInputResponse) GetMessage() string {
 	return s.Message
 }
 
 // SetMessage sets the value of Message.
-func (s *InvalidInputResponse) SetMessage(val OptString) {
+func (s *InvalidInputResponse) SetMessage(val string) {
 	s.Message = val
 }
 
@@ -74,60 +74,60 @@ func (*ListMessagesOKApplicationJSON) listMessagesRes() {}
 
 // Ref: #/components/schemas/message
 type Message struct {
-	ID            OptMessageId `json:"id"`
-	SenderID      OptString    `json:"sender_id"`
-	Message       OptString    `json:"message"`
-	Edited        OptBool      `json:"edited"`
-	SendTimestamp OptInt       `json:"send_timestamp"`
+	ID            MessageId `json:"id"`
+	SenderID      UserId    `json:"sender_id"`
+	Message       string    `json:"message"`
+	Edited        bool      `json:"edited"`
+	SendTimestamp int       `json:"send_timestamp"`
 }
 
 // GetID returns the value of ID.
-func (s *Message) GetID() OptMessageId {
+func (s *Message) GetID() MessageId {
 	return s.ID
 }
 
 // GetSenderID returns the value of SenderID.
-func (s *Message) GetSenderID() OptString {
+func (s *Message) GetSenderID() UserId {
 	return s.SenderID
 }
 
 // GetMessage returns the value of Message.
-func (s *Message) GetMessage() OptString {
+func (s *Message) GetMessage() string {
 	return s.Message
 }
 
 // GetEdited returns the value of Edited.
-func (s *Message) GetEdited() OptBool {
+func (s *Message) GetEdited() bool {
 	return s.Edited
 }
 
 // GetSendTimestamp returns the value of SendTimestamp.
-func (s *Message) GetSendTimestamp() OptInt {
+func (s *Message) GetSendTimestamp() int {
 	return s.SendTimestamp
 }
 
 // SetID sets the value of ID.
-func (s *Message) SetID(val OptMessageId) {
+func (s *Message) SetID(val MessageId) {
 	s.ID = val
 }
 
 // SetSenderID sets the value of SenderID.
-func (s *Message) SetSenderID(val OptString) {
+func (s *Message) SetSenderID(val UserId) {
 	s.SenderID = val
 }
 
 // SetMessage sets the value of Message.
-func (s *Message) SetMessage(val OptString) {
+func (s *Message) SetMessage(val string) {
 	s.Message = val
 }
 
 // SetEdited sets the value of Edited.
-func (s *Message) SetEdited(val OptBool) {
+func (s *Message) SetEdited(val bool) {
 	s.Edited = val
 }
 
 // SetSendTimestamp sets the value of SendTimestamp.
-func (s *Message) SetSendTimestamp(val OptInt) {
+func (s *Message) SetSendTimestamp(val int) {
 	s.SendTimestamp = val
 }
 
@@ -152,190 +152,6 @@ func (s *MessageInput) SetMessage(val string) {
 	s.Message = val
 }
 
-// NewOptBool returns new OptBool with value set to v.
-func NewOptBool(v bool) OptBool {
-	return OptBool{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptBool is optional bool.
-type OptBool struct {
-	Value bool
-	Set   bool
-}
-
-// IsSet returns true if OptBool was set.
-func (o OptBool) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptBool) Reset() {
-	var v bool
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptBool) SetTo(v bool) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptBool) Get() (v bool, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptBool) Or(d bool) bool {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptInt returns new OptInt with value set to v.
-func NewOptInt(v int) OptInt {
-	return OptInt{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptInt is optional int.
-type OptInt struct {
-	Value int
-	Set   bool
-}
-
-// IsSet returns true if OptInt was set.
-func (o OptInt) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptInt) Reset() {
-	var v int
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptInt) SetTo(v int) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptInt) Get() (v int, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptInt) Or(d int) int {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessageId returns new OptMessageId with value set to v.
-func NewOptMessageId(v MessageId) OptMessageId {
-	return OptMessageId{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessageId is optional MessageId.
-type OptMessageId struct {
-	Value MessageId
-	Set   bool
-}
-
-// IsSet returns true if OptMessageId was set.
-func (o OptMessageId) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessageId) Reset() {
-	var v MessageId
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessageId) SetTo(v MessageId) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessageId) Get() (v MessageId, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessageId) Or(d MessageId) MessageId {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptString returns new OptString with value set to v.
-func NewOptString(v string) OptString {
-	return OptString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptString is optional string.
-type OptString struct {
-	Value string
-	Set   bool
-}
-
-// IsSet returns true if OptString was set.
-func (o OptString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptString) SetTo(v string) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptString) Get() (v string, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptString) Or(d string) string {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // Ref: #/components/responses/unauthenticatedResponse
 type UnauthenticatedResponse struct{}
 
@@ -358,3 +174,5 @@ func (*UnauthorizedResponse) updateMessageRes()  {}
 type UpdateMessageNotFound struct{}
 
 func (*UpdateMessageNotFound) updateMessageRes() {}
+
+type UserId string

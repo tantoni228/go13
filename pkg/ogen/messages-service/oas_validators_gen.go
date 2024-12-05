@@ -42,23 +42,8 @@ func (s *Message) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if value, ok := s.SenderID.Get(); ok {
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:    0,
-					MinLengthSet: false,
-					MaxLength:    0,
-					MaxLengthSet: false,
-					Email:        false,
-					Hostname:     false,
-					Regex:        regexMap["uuid"],
-				}).Validate(string(value)); err != nil {
-					return errors.Wrap(err, "string")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
+		if err := s.SenderID.Validate(); err != nil {
+			return err
 		}
 		return nil
 	}(); err != nil {
@@ -100,6 +85,22 @@ func (s *MessageInput) Validate() error {
 	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s UserId) Validate() error {
+	alias := (string)(s)
+	if err := (validate.String{
+		MinLength:    0,
+		MinLengthSet: false,
+		MaxLength:    0,
+		MaxLengthSet: false,
+		Email:        false,
+		Hostname:     false,
+		Regex:        regexMap["uuid"],
+	}).Validate(string(alias)); err != nil {
+		return errors.Wrap(err, "string")
 	}
 	return nil
 }

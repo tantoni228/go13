@@ -32,6 +32,10 @@ components:
           type: string
         bio:
           type: string
+      required:
+        - id
+        - username
+        - bio
 
     userInput:
       type: object
@@ -55,6 +59,10 @@ components:
           type: string
         description:
           type: string
+      required:
+        - id
+        - name
+        - description
 
     chatInput:
       type: object
@@ -75,7 +83,10 @@ components:
         user_id:
           $ref: "#/components/schemas/userId"
         role_id:
-          type: integer
+          $ref: "#/components/schemas/roleId"
+      required:
+        - user_id
+        - role_id
 
     role:
       type: object
@@ -88,7 +99,7 @@ components:
           type: boolean
         can_edit_roles:
           type: boolean
-        can_edit_messages:
+        can_delete_messages:
           type: boolean
         can_get_join_code:
           type: boolean
@@ -96,6 +107,15 @@ components:
           type: boolean
         can_delete_chat:
           type: boolean
+      required:
+        - id
+        - name
+        - can_ban_users
+        - can_edit_roles
+        - can_delete_messages
+        - can_get_join_code
+        - can_edit_chat_info
+        - can_delete_chat
 
     roleInput:
       type: object
@@ -106,7 +126,7 @@ components:
           type: boolean
         can_edit_roles:
           type: boolean
-        can_edit_messages:
+        can_delete_messages:
           type: boolean
         can_get_join_code:
           type: boolean
@@ -117,7 +137,8 @@ components:
       required:
         - name
         - can_ban_users
-        - can_edit_messages
+        - can_edit_roles
+        - can_delete_messages
         - can_get_join_code
         - can_edit_chat_info
         - can_delete_chat
@@ -128,14 +149,19 @@ components:
         id:
           $ref: "#/components/schemas/messageId"
         sender_id:
-          type: string
-          pattern: uuid
+          $ref: "#/components/schemas/userId"
         message:
           type: string
         edited:
           type: boolean
         send_timestamp:
           type: integer
+      required:
+        - id
+        - sender_id
+        - message
+        - edited
+        - send_timestamp
 
     messageInput:
       type: object

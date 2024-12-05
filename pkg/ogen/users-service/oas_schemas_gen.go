@@ -65,16 +65,16 @@ func (*InternalErrorResponse) signUpRes()         {}
 func (*InternalErrorResponse) updateMeRes()       {}
 
 type InvalidInputResponse struct {
-	Message OptString `json:"message"`
+	Message string `json:"message"`
 }
 
 // GetMessage returns the value of Message.
-func (s *InvalidInputResponse) GetMessage() OptString {
+func (s *InvalidInputResponse) GetMessage() string {
 	return s.Message
 }
 
 // SetMessage sets the value of Message.
-func (s *InvalidInputResponse) SetMessage(val OptString) {
+func (s *InvalidInputResponse) SetMessage(val string) {
 	s.Message = val
 }
 
@@ -123,52 +123,6 @@ func (o OptString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptString) Or(d string) string {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptUserId returns new OptUserId with value set to v.
-func NewOptUserId(v UserId) OptUserId {
-	return OptUserId{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptUserId is optional UserId.
-type OptUserId struct {
-	Value UserId
-	Set   bool
-}
-
-// IsSet returns true if OptUserId was set.
-func (o OptUserId) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptUserId) Reset() {
-	var v UserId
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptUserId) SetTo(v UserId) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptUserId) Get() (v UserId, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptUserId) Or(d UserId) UserId {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -280,38 +234,38 @@ func (*UnauthenticatedResponse) updateMeRes()       {}
 
 // Ref: #/components/schemas/user
 type User struct {
-	ID       OptUserId `json:"id"`
-	Username OptString `json:"username"`
-	Bio      OptString `json:"bio"`
+	ID       UserId `json:"id"`
+	Username string `json:"username"`
+	Bio      string `json:"bio"`
 }
 
 // GetID returns the value of ID.
-func (s *User) GetID() OptUserId {
+func (s *User) GetID() UserId {
 	return s.ID
 }
 
 // GetUsername returns the value of Username.
-func (s *User) GetUsername() OptString {
+func (s *User) GetUsername() string {
 	return s.Username
 }
 
 // GetBio returns the value of Bio.
-func (s *User) GetBio() OptString {
+func (s *User) GetBio() string {
 	return s.Bio
 }
 
 // SetID sets the value of ID.
-func (s *User) SetID(val OptUserId) {
+func (s *User) SetID(val UserId) {
 	s.ID = val
 }
 
 // SetUsername sets the value of Username.
-func (s *User) SetUsername(val OptString) {
+func (s *User) SetUsername(val string) {
 	s.Username = val
 }
 
 // SetBio sets the value of Bio.
-func (s *User) SetBio(val OptString) {
+func (s *User) SetBio(val string) {
 	s.Bio = val
 }
 

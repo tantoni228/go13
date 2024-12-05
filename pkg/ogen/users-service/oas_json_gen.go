@@ -171,10 +171,8 @@ func (s *InvalidInputResponse) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *InvalidInputResponse) encodeFields(e *jx.Encoder) {
 	{
-		if s.Message.Set {
-			e.FieldStart("message")
-			s.Message.Encode(e)
-		}
+		e.FieldStart("message")
+		e.Str(s.Message)
 	}
 }
 
@@ -187,13 +185,16 @@ func (s *InvalidInputResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode InvalidInputResponse to nil")
 	}
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "message":
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.Message.Reset()
-				if err := s.Message.Decode(d); err != nil {
+				v, err := d.Str()
+				s.Message = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -206,6 +207,38 @@ func (s *InvalidInputResponse) Decode(d *jx.Decoder) error {
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "decode InvalidInputResponse")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfInvalidInputResponse) {
+					name = jsonFieldsNameOfInvalidInputResponse[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
 	}
 
 	return nil
@@ -255,39 +288,6 @@ func (s OptString) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptString) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes UserId as json.
-func (o OptUserId) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes UserId from json.
-func (o *OptUserId) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptUserId to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptUserId) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptUserId) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -640,22 +640,16 @@ func (s *User) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *User) encodeFields(e *jx.Encoder) {
 	{
-		if s.ID.Set {
-			e.FieldStart("id")
-			s.ID.Encode(e)
-		}
+		e.FieldStart("id")
+		s.ID.Encode(e)
 	}
 	{
-		if s.Username.Set {
-			e.FieldStart("username")
-			s.Username.Encode(e)
-		}
+		e.FieldStart("username")
+		e.Str(s.Username)
 	}
 	{
-		if s.Bio.Set {
-			e.FieldStart("bio")
-			s.Bio.Encode(e)
-		}
+		e.FieldStart("bio")
+		e.Str(s.Bio)
 	}
 }
 
@@ -670,12 +664,13 @@ func (s *User) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode User to nil")
 	}
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "id":
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.ID.Reset()
 				if err := s.ID.Decode(d); err != nil {
 					return err
 				}
@@ -684,9 +679,11 @@ func (s *User) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"id\"")
 			}
 		case "username":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				s.Username.Reset()
-				if err := s.Username.Decode(d); err != nil {
+				v, err := d.Str()
+				s.Username = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -694,9 +691,11 @@ func (s *User) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"username\"")
 			}
 		case "bio":
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
-				s.Bio.Reset()
-				if err := s.Bio.Decode(d); err != nil {
+				v, err := d.Str()
+				s.Bio = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -709,6 +708,38 @@ func (s *User) Decode(d *jx.Decoder) error {
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "decode User")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfUser) {
+					name = jsonFieldsNameOfUser[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
 	}
 
 	return nil

@@ -32,38 +32,38 @@ func (s *BearerAuth) SetToken(val string) {
 
 // Ref: #/components/schemas/chat
 type Chat struct {
-	ID          OptChatId `json:"id"`
-	Name        OptString `json:"name"`
-	Description OptString `json:"description"`
+	ID          ChatId `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // GetID returns the value of ID.
-func (s *Chat) GetID() OptChatId {
+func (s *Chat) GetID() ChatId {
 	return s.ID
 }
 
 // GetName returns the value of Name.
-func (s *Chat) GetName() OptString {
+func (s *Chat) GetName() string {
 	return s.Name
 }
 
 // GetDescription returns the value of Description.
-func (s *Chat) GetDescription() OptString {
+func (s *Chat) GetDescription() string {
 	return s.Description
 }
 
 // SetID sets the value of ID.
-func (s *Chat) SetID(val OptChatId) {
+func (s *Chat) SetID(val ChatId) {
 	s.ID = val
 }
 
 // SetName sets the value of Name.
-func (s *Chat) SetName(val OptString) {
+func (s *Chat) SetName(val string) {
 	s.Name = val
 }
 
 // SetDescription sets the value of Description.
-func (s *Chat) SetDescription(val OptString) {
+func (s *Chat) SetDescription(val string) {
 	s.Description = val
 }
 
@@ -219,16 +219,16 @@ func (*InternalErrorResponse) updateChatRes()  {}
 func (*InternalErrorResponse) updateRoleRes()  {}
 
 type InvalidInputResponse struct {
-	Message OptString `json:"message"`
+	Message string `json:"message"`
 }
 
 // GetMessage returns the value of Message.
-func (s *InvalidInputResponse) GetMessage() OptString {
+func (s *InvalidInputResponse) GetMessage() string {
 	return s.Message
 }
 
 // SetMessage sets the value of Message.
-func (s *InvalidInputResponse) SetMessage(val OptString) {
+func (s *InvalidInputResponse) SetMessage(val string) {
 	s.Message = val
 }
 
@@ -269,16 +269,16 @@ func (s *JoinChatReq) SetJoinCode(val string) {
 }
 
 type JoinCodeResponse struct {
-	JoinCode OptString `json:"join_code"`
+	JoinCode string `json:"join_code"`
 }
 
 // GetJoinCode returns the value of JoinCode.
-func (s *JoinCodeResponse) GetJoinCode() OptString {
+func (s *JoinCodeResponse) GetJoinCode() string {
 	return s.JoinCode
 }
 
 // SetJoinCode sets the value of JoinCode.
-func (s *JoinCodeResponse) SetJoinCode(val OptString) {
+func (s *JoinCodeResponse) SetJoinCode(val string) {
 	s.JoinCode = val
 }
 
@@ -303,395 +303,119 @@ func (*ListRolesOKApplicationJSON) listRolesRes() {}
 
 // Ref: #/components/schemas/member
 type Member struct {
-	UserID OptUserId `json:"user_id"`
-	RoleID OptInt    `json:"role_id"`
+	UserID UserId `json:"user_id"`
+	RoleID RoleId `json:"role_id"`
 }
 
 // GetUserID returns the value of UserID.
-func (s *Member) GetUserID() OptUserId {
+func (s *Member) GetUserID() UserId {
 	return s.UserID
 }
 
 // GetRoleID returns the value of RoleID.
-func (s *Member) GetRoleID() OptInt {
+func (s *Member) GetRoleID() RoleId {
 	return s.RoleID
 }
 
 // SetUserID sets the value of UserID.
-func (s *Member) SetUserID(val OptUserId) {
+func (s *Member) SetUserID(val UserId) {
 	s.UserID = val
 }
 
 // SetRoleID sets the value of RoleID.
-func (s *Member) SetRoleID(val OptInt) {
+func (s *Member) SetRoleID(val RoleId) {
 	s.RoleID = val
-}
-
-// NewOptBool returns new OptBool with value set to v.
-func NewOptBool(v bool) OptBool {
-	return OptBool{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptBool is optional bool.
-type OptBool struct {
-	Value bool
-	Set   bool
-}
-
-// IsSet returns true if OptBool was set.
-func (o OptBool) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptBool) Reset() {
-	var v bool
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptBool) SetTo(v bool) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptBool) Get() (v bool, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptBool) Or(d bool) bool {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptChatId returns new OptChatId with value set to v.
-func NewOptChatId(v ChatId) OptChatId {
-	return OptChatId{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptChatId is optional ChatId.
-type OptChatId struct {
-	Value ChatId
-	Set   bool
-}
-
-// IsSet returns true if OptChatId was set.
-func (o OptChatId) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptChatId) Reset() {
-	var v ChatId
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptChatId) SetTo(v ChatId) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptChatId) Get() (v ChatId, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptChatId) Or(d ChatId) ChatId {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptInt returns new OptInt with value set to v.
-func NewOptInt(v int) OptInt {
-	return OptInt{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptInt is optional int.
-type OptInt struct {
-	Value int
-	Set   bool
-}
-
-// IsSet returns true if OptInt was set.
-func (o OptInt) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptInt) Reset() {
-	var v int
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptInt) SetTo(v int) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptInt) Get() (v int, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptInt) Or(d int) int {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptRoleId returns new OptRoleId with value set to v.
-func NewOptRoleId(v RoleId) OptRoleId {
-	return OptRoleId{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptRoleId is optional RoleId.
-type OptRoleId struct {
-	Value RoleId
-	Set   bool
-}
-
-// IsSet returns true if OptRoleId was set.
-func (o OptRoleId) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptRoleId) Reset() {
-	var v RoleId
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptRoleId) SetTo(v RoleId) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptRoleId) Get() (v RoleId, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptRoleId) Or(d RoleId) RoleId {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptString returns new OptString with value set to v.
-func NewOptString(v string) OptString {
-	return OptString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptString is optional string.
-type OptString struct {
-	Value string
-	Set   bool
-}
-
-// IsSet returns true if OptString was set.
-func (o OptString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptString) SetTo(v string) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptString) Get() (v string, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptString) Or(d string) string {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptUserId returns new OptUserId with value set to v.
-func NewOptUserId(v UserId) OptUserId {
-	return OptUserId{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptUserId is optional UserId.
-type OptUserId struct {
-	Value UserId
-	Set   bool
-}
-
-// IsSet returns true if OptUserId was set.
-func (o OptUserId) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptUserId) Reset() {
-	var v UserId
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptUserId) SetTo(v UserId) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptUserId) Get() (v UserId, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptUserId) Or(d UserId) UserId {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
 }
 
 // Ref: #/components/schemas/role
 type Role struct {
-	ID              OptRoleId `json:"id"`
-	Name            OptString `json:"name"`
-	CanBanUsers     OptBool   `json:"can_ban_users"`
-	CanEditRoles    OptBool   `json:"can_edit_roles"`
-	CanEditMessages OptBool   `json:"can_edit_messages"`
-	CanGetJoinCode  OptBool   `json:"can_get_join_code"`
-	CanEditChatInfo OptBool   `json:"can_edit_chat_info"`
-	CanDeleteChat   OptBool   `json:"can_delete_chat"`
+	ID                RoleId `json:"id"`
+	Name              string `json:"name"`
+	CanBanUsers       bool   `json:"can_ban_users"`
+	CanEditRoles      bool   `json:"can_edit_roles"`
+	CanDeleteMessages bool   `json:"can_delete_messages"`
+	CanGetJoinCode    bool   `json:"can_get_join_code"`
+	CanEditChatInfo   bool   `json:"can_edit_chat_info"`
+	CanDeleteChat     bool   `json:"can_delete_chat"`
 }
 
 // GetID returns the value of ID.
-func (s *Role) GetID() OptRoleId {
+func (s *Role) GetID() RoleId {
 	return s.ID
 }
 
 // GetName returns the value of Name.
-func (s *Role) GetName() OptString {
+func (s *Role) GetName() string {
 	return s.Name
 }
 
 // GetCanBanUsers returns the value of CanBanUsers.
-func (s *Role) GetCanBanUsers() OptBool {
+func (s *Role) GetCanBanUsers() bool {
 	return s.CanBanUsers
 }
 
 // GetCanEditRoles returns the value of CanEditRoles.
-func (s *Role) GetCanEditRoles() OptBool {
+func (s *Role) GetCanEditRoles() bool {
 	return s.CanEditRoles
 }
 
-// GetCanEditMessages returns the value of CanEditMessages.
-func (s *Role) GetCanEditMessages() OptBool {
-	return s.CanEditMessages
+// GetCanDeleteMessages returns the value of CanDeleteMessages.
+func (s *Role) GetCanDeleteMessages() bool {
+	return s.CanDeleteMessages
 }
 
 // GetCanGetJoinCode returns the value of CanGetJoinCode.
-func (s *Role) GetCanGetJoinCode() OptBool {
+func (s *Role) GetCanGetJoinCode() bool {
 	return s.CanGetJoinCode
 }
 
 // GetCanEditChatInfo returns the value of CanEditChatInfo.
-func (s *Role) GetCanEditChatInfo() OptBool {
+func (s *Role) GetCanEditChatInfo() bool {
 	return s.CanEditChatInfo
 }
 
 // GetCanDeleteChat returns the value of CanDeleteChat.
-func (s *Role) GetCanDeleteChat() OptBool {
+func (s *Role) GetCanDeleteChat() bool {
 	return s.CanDeleteChat
 }
 
 // SetID sets the value of ID.
-func (s *Role) SetID(val OptRoleId) {
+func (s *Role) SetID(val RoleId) {
 	s.ID = val
 }
 
 // SetName sets the value of Name.
-func (s *Role) SetName(val OptString) {
+func (s *Role) SetName(val string) {
 	s.Name = val
 }
 
 // SetCanBanUsers sets the value of CanBanUsers.
-func (s *Role) SetCanBanUsers(val OptBool) {
+func (s *Role) SetCanBanUsers(val bool) {
 	s.CanBanUsers = val
 }
 
 // SetCanEditRoles sets the value of CanEditRoles.
-func (s *Role) SetCanEditRoles(val OptBool) {
+func (s *Role) SetCanEditRoles(val bool) {
 	s.CanEditRoles = val
 }
 
-// SetCanEditMessages sets the value of CanEditMessages.
-func (s *Role) SetCanEditMessages(val OptBool) {
-	s.CanEditMessages = val
+// SetCanDeleteMessages sets the value of CanDeleteMessages.
+func (s *Role) SetCanDeleteMessages(val bool) {
+	s.CanDeleteMessages = val
 }
 
 // SetCanGetJoinCode sets the value of CanGetJoinCode.
-func (s *Role) SetCanGetJoinCode(val OptBool) {
+func (s *Role) SetCanGetJoinCode(val bool) {
 	s.CanGetJoinCode = val
 }
 
 // SetCanEditChatInfo sets the value of CanEditChatInfo.
-func (s *Role) SetCanEditChatInfo(val OptBool) {
+func (s *Role) SetCanEditChatInfo(val bool) {
 	s.CanEditChatInfo = val
 }
 
 // SetCanDeleteChat sets the value of CanDeleteChat.
-func (s *Role) SetCanDeleteChat(val OptBool) {
+func (s *Role) SetCanDeleteChat(val bool) {
 	s.CanDeleteChat = val
 }
 
@@ -703,13 +427,13 @@ type RoleId int
 
 // Ref: #/components/schemas/roleInput
 type RoleInput struct {
-	Name            string  `json:"name"`
-	CanBanUsers     bool    `json:"can_ban_users"`
-	CanEditRoles    OptBool `json:"can_edit_roles"`
-	CanEditMessages bool    `json:"can_edit_messages"`
-	CanGetJoinCode  bool    `json:"can_get_join_code"`
-	CanEditChatInfo bool    `json:"can_edit_chat_info"`
-	CanDeleteChat   bool    `json:"can_delete_chat"`
+	Name              string `json:"name"`
+	CanBanUsers       bool   `json:"can_ban_users"`
+	CanEditRoles      bool   `json:"can_edit_roles"`
+	CanDeleteMessages bool   `json:"can_delete_messages"`
+	CanGetJoinCode    bool   `json:"can_get_join_code"`
+	CanEditChatInfo   bool   `json:"can_edit_chat_info"`
+	CanDeleteChat     bool   `json:"can_delete_chat"`
 }
 
 // GetName returns the value of Name.
@@ -723,13 +447,13 @@ func (s *RoleInput) GetCanBanUsers() bool {
 }
 
 // GetCanEditRoles returns the value of CanEditRoles.
-func (s *RoleInput) GetCanEditRoles() OptBool {
+func (s *RoleInput) GetCanEditRoles() bool {
 	return s.CanEditRoles
 }
 
-// GetCanEditMessages returns the value of CanEditMessages.
-func (s *RoleInput) GetCanEditMessages() bool {
-	return s.CanEditMessages
+// GetCanDeleteMessages returns the value of CanDeleteMessages.
+func (s *RoleInput) GetCanDeleteMessages() bool {
+	return s.CanDeleteMessages
 }
 
 // GetCanGetJoinCode returns the value of CanGetJoinCode.
@@ -758,13 +482,13 @@ func (s *RoleInput) SetCanBanUsers(val bool) {
 }
 
 // SetCanEditRoles sets the value of CanEditRoles.
-func (s *RoleInput) SetCanEditRoles(val OptBool) {
+func (s *RoleInput) SetCanEditRoles(val bool) {
 	s.CanEditRoles = val
 }
 
-// SetCanEditMessages sets the value of CanEditMessages.
-func (s *RoleInput) SetCanEditMessages(val bool) {
-	s.CanEditMessages = val
+// SetCanDeleteMessages sets the value of CanDeleteMessages.
+func (s *RoleInput) SetCanDeleteMessages(val bool) {
+	s.CanDeleteMessages = val
 }
 
 // SetCanGetJoinCode sets the value of CanGetJoinCode.
