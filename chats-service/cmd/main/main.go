@@ -37,7 +37,7 @@ func main() {
 
 	l, err := logger.Get(cfg.LogLevel)
 	if err != nil {
-		log.Fatal(l)
+		log.Fatal(err)
 	}
 
 	defer l.Sync() //nolint:errcheck
