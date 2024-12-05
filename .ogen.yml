@@ -13,5 +13,4 @@ generator:
       - "client/request/validation"
       # Enables validation of server responses
       - "server/response/validation"
-      - ogen/unimplemented
     disable_all: true
