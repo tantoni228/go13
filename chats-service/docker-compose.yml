@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16.2-alpine
+    environment:
+      - POSTGRES_DB=chats
+      - POSTGRES_USER=chats_service
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - chats_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -d chats -U chats_service
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+
+  migrate:
+    image: migrate/migrate
+    container_name: migrate
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: >
+      sh -c 'migrate -path /migrations \
+        -database "postgres://chats_service:secret@postgres:5432/chats?sslmode=disable" up
+      '
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  chats_postgres_data:
