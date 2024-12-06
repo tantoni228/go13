@@ -9,6 +9,8 @@ import (
 	"go.uber.org/zap"
 )
 
+// LoggerProvider returns middleware thas sets logger
+// to request context.
 func LoggerProvider(l *zap.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +35,8 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
+// Logging returns middleware that logs information about request.
+// Needs to be applied after LoggerProvider
 func Logging() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

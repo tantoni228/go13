@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"go13/chats-service/internal/transport/rest/handlers"
-	"go13/chats-service/internal/transport/rest/middlewares"
+	"go13/pkg/auth"
+	"go13/pkg/middlewares"
 	api "go13/pkg/ogen/chats-service"
 	"net/http"
 
@@ -20,13 +21,6 @@ type handler struct {
 	*handlers.RolesHandler
 }
 
-type securityHandler struct{}
-
-// Don`t check security
-func (s *securityHandler) HandleBearerAuth(ctx context.Context, _ api.OperationName, _ api.BearerAuth) (context.Context, error) {
-	return ctx, nil
-}
-
 func NewServer(
 	chatsHandler *handlers.ChatsHandler,
 	rolesHandler *handlers.RolesHandler,
@@ -37,7 +31,7 @@ func NewServer(
 	apiSrv, err := api.NewServer(&handler{
 		chatsHandler,
 		rolesHandler,
-	}, &securityHandler{})
+	}, auth.NewSecurityHandler())
 	if err != nil {
 		return nil, err
 	}
