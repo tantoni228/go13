@@ -331,6 +331,7 @@ func (s *Member) SetRoleID(val RoleId) {
 type Role struct {
 	ID                RoleId `json:"id"`
 	Name              string `json:"name"`
+	IsSystem          bool   `json:"is_system"`
 	CanBanUsers       bool   `json:"can_ban_users"`
 	CanEditRoles      bool   `json:"can_edit_roles"`
 	CanDeleteMessages bool   `json:"can_delete_messages"`
@@ -347,6 +348,11 @@ func (s *Role) GetID() RoleId {
 // GetName returns the value of Name.
 func (s *Role) GetName() string {
 	return s.Name
+}
+
+// GetIsSystem returns the value of IsSystem.
+func (s *Role) GetIsSystem() bool {
+	return s.IsSystem
 }
 
 // GetCanBanUsers returns the value of CanBanUsers.
@@ -387,6 +393,11 @@ func (s *Role) SetID(val RoleId) {
 // SetName sets the value of Name.
 func (s *Role) SetName(val string) {
 	s.Name = val
+}
+
+// SetIsSystem sets the value of IsSystem.
+func (s *Role) SetIsSystem(val bool) {
+	s.IsSystem = val
 }
 
 // SetCanBanUsers sets the value of CanBanUsers.

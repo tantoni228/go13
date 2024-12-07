@@ -95,6 +95,8 @@ components:
           $ref: "#/components/schemas/roleId"
         name:
           type: string
+        is_system:
+          type: boolean
         can_ban_users:
           type: boolean
         can_edit_roles:
@@ -110,6 +112,7 @@ components:
       required:
         - id
         - name
+        - is_system
         - can_ban_users
         - can_edit_roles
         - can_delete_messages

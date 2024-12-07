@@ -858,6 +858,10 @@ func (s *Role) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
+		e.FieldStart("is_system")
+		e.Bool(s.IsSystem)
+	}
+	{
 		e.FieldStart("can_ban_users")
 		e.Bool(s.CanBanUsers)
 	}
@@ -883,15 +887,16 @@ func (s *Role) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfRole = [8]string{
+var jsonFieldsNameOfRole = [9]string{
 	0: "id",
 	1: "name",
-	2: "can_ban_users",
-	3: "can_edit_roles",
-	4: "can_delete_messages",
-	5: "can_get_join_code",
-	6: "can_edit_chat_info",
-	7: "can_delete_chat",
+	2: "is_system",
+	3: "can_ban_users",
+	4: "can_edit_roles",
+	5: "can_delete_messages",
+	6: "can_get_join_code",
+	7: "can_edit_chat_info",
+	8: "can_delete_chat",
 }
 
 // Decode decodes Role from json.
@@ -899,7 +904,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode Role to nil")
 	}
-	var requiredBitSet [1]uint8
+	var requiredBitSet [2]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -925,8 +930,20 @@ func (s *Role) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "can_ban_users":
+		case "is_system":
 			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Bool()
+				s.IsSystem = bool(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"is_system\"")
+			}
+		case "can_ban_users":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanBanUsers = bool(v)
@@ -938,7 +955,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"can_ban_users\"")
 			}
 		case "can_edit_roles":
-			requiredBitSet[0] |= 1 << 3
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanEditRoles = bool(v)
@@ -950,7 +967,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"can_edit_roles\"")
 			}
 		case "can_delete_messages":
-			requiredBitSet[0] |= 1 << 4
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanDeleteMessages = bool(v)
@@ -962,7 +979,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"can_delete_messages\"")
 			}
 		case "can_get_join_code":
-			requiredBitSet[0] |= 1 << 5
+			requiredBitSet[0] |= 1 << 6
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanGetJoinCode = bool(v)
@@ -974,7 +991,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"can_get_join_code\"")
 			}
 		case "can_edit_chat_info":
-			requiredBitSet[0] |= 1 << 6
+			requiredBitSet[0] |= 1 << 7
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanEditChatInfo = bool(v)
@@ -986,7 +1003,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"can_edit_chat_info\"")
 			}
 		case "can_delete_chat":
-			requiredBitSet[0] |= 1 << 7
+			requiredBitSet[1] |= 1 << 0
 			if err := func() error {
 				v, err := d.Bool()
 				s.CanDeleteChat = bool(v)
@@ -1006,8 +1023,9 @@ func (s *Role) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
+	for i, mask := range [2]uint8{
 		0b11111111,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
