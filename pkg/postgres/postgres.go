@@ -10,7 +10,17 @@ type Postgres struct {
 }
 
 func Get(cfg Config) (*Postgres, error) {
-	db, err := sqlx.Connect("postgres", cfg.GetConnString())
+	db, err := sqlx.Open("postgres", cfg.GetConnString())
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
+	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
+	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
+
+	err = db.Ping()
 	if err != nil {
 		return nil, err
 	}
