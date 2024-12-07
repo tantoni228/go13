@@ -2,14 +2,23 @@ package handlers
 
 import (
 	"context"
+	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/transport/rest/auth"
 	api "go13/pkg/ogen/chats-service"
 )
 
-type ChatsHandler struct {
+type ChatsService interface {
+	CreateChat(ctx context.Context, creatorId string, chat models.Chat) (models.Chat, error)
 }
 
-func NewChatsHandler() *ChatsHandler {
-	return &ChatsHandler{}
+type ChatsHandler struct {
+	chatsService ChatsService
+}
+
+func NewChatsHandler(chatsService ChatsService) *ChatsHandler {
+	return &ChatsHandler{
+		chatsService: chatsService,
+	}
 }
 
 // BanUser implements banUser operation.
@@ -27,7 +36,17 @@ func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (
 //
 // POST /chats
 func (ch *ChatsHandler) CreateChat(ctx context.Context, req *api.ChatInput) (api.CreateChatRes, error) {
-	return &api.Chat{}, nil
+	userId := auth.UserIdFromCtx(ctx)
+	chat := models.Chat{
+		Name:        req.GetName(),
+		Description: req.GetDescription(),
+	}
+	chat, err := ch.chatsService.CreateChat(ctx, userId, chat)
+	if err != nil {
+		return &api.InternalErrorResponse{}, err
+	}
+
+	return &api.Chat{ID: api.ChatId(chat.Id), Name: chat.Name, Description: chat.Description}, nil
 }
 
 // DeleteChat implements deleteChat operation.

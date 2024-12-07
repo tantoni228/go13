@@ -1,7 +1,7 @@
 package models
 
 type Chat struct {
-	Id          int
-	Name        string
-	Description string
+	Id          int    `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
 }

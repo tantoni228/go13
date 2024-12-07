@@ -1,0 +1,54 @@
+package postgres
+
+import (
+	"context"
+	"fmt"
+	"go13/chats-service/internal/models"
+	"go13/pkg/postgres"
+
+	"github.com/Masterminds/squirrel"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
+	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
+)
+
+type MembersRepo struct {
+	db     *sqlx.DB
+	sq     squirrel.StatementBuilderType
+	getter *trmsqlx.CtxGetter
+}
+
+func NewMembersRepo(pg *postgres.Postgres) *MembersRepo {
+	return &MembersRepo{
+		db:     pg.DB,
+		sq:     squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
+		getter: trmsqlx.DefaultCtxGetter,
+	}
+}
+
+func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.Member) error {
+	op := "MembersRepo.AddMember"
+	sql, args, err := mr.sq.
+		Insert("members").
+		Columns("chat_id", "user_id", "role_id").
+		Values(chatId, member.UserId, member.RoleId).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	_, err = mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Code {
+			case "23505":
+				return models.ErrUserAlreadyInChat
+			case "23503":
+				return models.ErrChatOrRoleNotFound
+			}
+		}
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}
