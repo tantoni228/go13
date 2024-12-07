@@ -62,9 +62,10 @@ func main() {
 	membersRepo := pgrepo.NewMembersRepo(pg)
 
 	chatsService := service.NewChatsService(chatsRepo, rolesRepo, membersRepo, trManager)
+	rolesService := service.NewRolesService(rolesRepo, membersRepo, trManager)
 
 	chatsHandler := handlers.NewChatsHandler(chatsService)
-	rolesHandler := handlers.NewRolesHandler()
+	rolesHandler := handlers.NewRolesHandler(rolesService)
 
 	server, err := rest.NewServer(chatsHandler, rolesHandler, l, cfg.Port)
 	if err != nil {

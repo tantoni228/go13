@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
 	"go13/pkg/postgres"
@@ -95,14 +97,41 @@ func (rr *RolesRepo) DeleteRolesForChat(ctx context.Context, chatId int) error {
 	return nil
 }
 
+func (rr *RolesRepo) GetMemberRoleId(ctx context.Context, chatId int) (int, error) {
+	op := "RolesRepo.GetMemberRoleId"
+
+	query, args, err := rr.sq.
+		Select("id").
+		From("roles").
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"name": models.RoleMember.Name},
+		}).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var id int
+	err = rr.getter.DefaultTrOrDB(ctx, rr.db).QueryRowContext(ctx, query, args...).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrChatOrRoleNotFound
+		}
+		return 0, fmt.Errorf("%s: QueryRowContext: %w", op, err)
+	}
+
+	return id, nil
+}
+
 func (rr *RolesRepo) DeleteRole(ctx context.Context, chatId int, roleId int) error {
 	op := "RolesRepo.DeleteRole"
 
 	sql, args, err := rr.sq.
 		Delete("roles").
-		Where(squirrel.Eq{
-			"id":      roleId,
-			"chat_id": chatId,
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"id": roleId},
 		}).
 		ToSql()
 	if err != nil {

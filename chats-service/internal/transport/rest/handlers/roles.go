@@ -2,14 +2,26 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"go13/chats-service/internal/models"
+	"go13/pkg/logger"
 	api "go13/pkg/ogen/chats-service"
+
+	"go.uber.org/zap"
 )
 
-type RolesHandler struct {
+type RolesService interface {
+	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
 
-func NewRolesHandler() *RolesHandler {
-	return &RolesHandler{}
+type RolesHandler struct {
+	rolesService RolesService
+}
+
+func NewRolesHandler(rolesService RolesService) *RolesHandler {
+	return &RolesHandler{
+		rolesService: rolesService,
+	}
 }
 
 // CheckAccess implements CheckAccess operation.
@@ -36,6 +48,15 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 //
 // DELETE /roles/{roleId}
 func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRoleParams) (api.DeleteRoleRes, error) {
+	err := rh.rolesService.DeleteRole(ctx, int(params.ChatId), int(params.RoleId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+			return &api.DeleteRoleNotFound{}, nil
+		}
+		logger.FromCtx(ctx).Error("delete role", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
 	return &api.DeleteRoleNoContent{}, nil
 }
 

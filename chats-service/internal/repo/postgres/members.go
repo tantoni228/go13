@@ -71,3 +71,26 @@ func (mr *MembersRepo) DeleteMembersForChat(ctx context.Context, chatId int) err
 
 	return nil
 }
+
+func (mr *MembersRepo) UnsetRole(ctx context.Context, chatId int, oldRoleId, newRoleId int) error {
+	op := "MembersRepo.UnsetRole"
+
+	sql, args, err := mr.sq.
+		Update("members").
+		Set("role_id", newRoleId).
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"role_id": oldRoleId},
+		}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	_, err = mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}
