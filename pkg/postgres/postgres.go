@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"context"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -9,7 +11,7 @@ type Postgres struct {
 	DB *sqlx.DB
 }
 
-func Get(cfg Config) (*Postgres, error) {
+func Get(ctx context.Context, cfg Config) (*Postgres, error) {
 	db, err := sqlx.Open("postgres", cfg.GetConnString())
 	if err != nil {
 		return nil, err
@@ -20,7 +22,7 @@ func Get(cfg Config) (*Postgres, error) {
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
-	err = db.Ping()
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
