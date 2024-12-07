@@ -3,8 +3,8 @@ package rest
 import (
 	"context"
 	"fmt"
+	"go13/chats-service/internal/transport/rest/auth"
 	"go13/chats-service/internal/transport/rest/handlers"
-	"go13/pkg/auth"
 	"go13/pkg/middlewares"
 	api "go13/pkg/ogen/chats-service"
 	"net/http"
