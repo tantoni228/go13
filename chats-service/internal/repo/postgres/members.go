@@ -52,3 +52,22 @@ func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.
 
 	return nil
 }
+
+func (mr *MembersRepo) DeleteMembersForChat(ctx context.Context, chatId int) error {
+	op := "MembersRepo.DeleteMembersForChat"
+
+	sql, args, err := mr.sq.
+		Delete("members").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: building query: %w", op, err)
+	}
+
+	_, err = mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}

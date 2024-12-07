@@ -75,3 +75,53 @@ func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Rol
 	role.Id = id
 	return role, nil
 }
+
+func (rr *RolesRepo) DeleteRolesForChat(ctx context.Context, chatId int) error {
+	op := "RolesRepo.DeleteRolesForChat"
+
+	sql, args, err := rr.sq.
+		Delete("roles").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: building query: %w", op, err)
+	}
+
+	_, err = rr.getter.DefaultTrOrDB(ctx, rr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}
+
+func (rr *RolesRepo) DeleteRole(ctx context.Context, chatId int, roleId int) error {
+	op := "RolesRepo.DeleteRole"
+
+	sql, args, err := rr.sq.
+		Delete("roles").
+		Where(squirrel.Eq{
+			"id":      roleId,
+			"chat_id": chatId,
+		}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: building query: %w", op, err)
+	}
+
+	cmd, err := rr.getter.DefaultTrOrDB(ctx, rr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: cmd.RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.ErrChatOrRoleNotFound
+	}
+
+	return nil
+}

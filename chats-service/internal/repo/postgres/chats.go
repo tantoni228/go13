@@ -46,3 +46,31 @@ func (cr *ChatsRepo) CreateChat(ctx context.Context, chat models.Chat) (models.C
 	chat.Id = id
 	return chat, nil
 }
+
+func (cr *ChatsRepo) DeleteChat(ctx context.Context, chatId int) error {
+	op := "ChatsRepo.DeleteChat"
+
+	sql, args, err := cr.sq.
+		Delete("chats").
+		Where(squirrel.Eq{"id": chatId}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: building query: %w", op, err)
+	}
+
+	cmd, err := cr.getter.DefaultTrOrDB(ctx, cr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: cmd.RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.ErrChatNotFound
+	}
+
+	return nil
+}

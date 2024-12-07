@@ -67,3 +67,25 @@ func (cs *ChatsService) CreateChat(ctx context.Context, creatorId string, chat m
 
 	return resChat, nil
 }
+
+func (cs *ChatsService) DeleteChat(ctx context.Context, chatId int) error {
+	op := "ChatsService.DeleteChat"
+
+	err := cs.trManager.Do(ctx, func(ctx context.Context) error {
+		if err := cs.membersRepo.DeleteMembersForChat(ctx, chatId); err != nil {
+			return fmt.Errorf("delete members: %w", err)
+		}
+		if err := cs.rolesRepo.DeleteRolesForChat(ctx, chatId); err != nil {
+			return fmt.Errorf("delete roles: %w", err)
+		}
+		if err := cs.chatsRepo.DeleteChat(ctx, chatId); err != nil {
+			return fmt.Errorf("delete chat: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%s: trManager.Do: %w", op, err)
+	}
+
+	return nil
+}
