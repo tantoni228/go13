@@ -78,6 +78,42 @@ func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Rol
 	return role, nil
 }
 
+func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error) {
+	op := "RolesRepo.GetRoleById"
+
+	query, args, err := rr.sq.
+		Select(
+			"id",
+			"name",
+			"is_system",
+			"can_ban_users",
+			"can_edit_roles",
+			"can_delete_messages",
+			"can_get_join_code",
+			"can_edit_chat_info",
+			"can_delete_chat",
+		).From("roles").
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"id": roleId},
+		}).ToSql()
+
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var role models.Role
+	err = rr.getter.DefaultTrOrDB(ctx, rr.db).GetContext(ctx, &role, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Role{}, models.ErrChatOrRoleNotFound
+		}
+		return models.Role{}, fmt.Errorf("%s: GetContext: %w", op, err)
+	}
+
+	return role, nil
+}
+
 func (rr *RolesRepo) DeleteRolesForChat(ctx context.Context, chatId int) error {
 	op := "RolesRepo.DeleteRolesForChat"
 
@@ -149,7 +185,7 @@ func (rr *RolesRepo) DeleteRole(ctx context.Context, chatId int, roleId int) err
 	}
 
 	if affected == 0 {
-		return models.ErrRoleNotFound
+		return models.ErrChatOrRoleNotFound
 	}
 
 	return nil

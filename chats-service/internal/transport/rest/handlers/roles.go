@@ -12,6 +12,7 @@ import (
 
 type RolesService interface {
 	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
+	GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
 
@@ -41,13 +42,13 @@ func (rh *RolesHandler) CheckAccess(ctx context.Context, params api.CheckAccessP
 // POST /roles
 func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, params api.CreateRoleParams) (api.CreateRoleRes, error) {
 	role := models.Role{
-		Name:              req.Name,
-		CanBanUsers:       req.CanBanUsers,
-		CanEditRoles:      req.CanEditRoles,
-		CanDeleteMessages: req.CanDeleteMessages,
-		CanGetJoinCode:    req.CanGetJoinCode,
-		CanEditChatInfo:   req.CanEditChatInfo,
-		CanDeleteChat:     req.CanDeleteChat,
+		Name:              req.GetName(),
+		CanBanUsers:       req.GetCanBanUsers(),
+		CanEditRoles:      req.GetCanEditRoles(),
+		CanDeleteMessages: req.GetCanDeleteMessages(),
+		CanGetJoinCode:    req.GetCanGetJoinCode(),
+		CanEditChatInfo:   req.GetCanEditChatInfo(),
+		CanDeleteChat:     req.GetCanDeleteChat(),
 	}
 	created, err := rh.rolesService.CreateRole(ctx, int(params.ChatId), role)
 	if err != nil {
@@ -64,6 +65,7 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 	return &api.Role{
 		ID:                api.RoleId(created.Id),
 		Name:              created.Name,
+		IsSystem:          created.IsSystem,
 		CanBanUsers:       created.CanBanUsers,
 		CanEditRoles:      created.CanEditRoles,
 		CanDeleteMessages: created.CanDeleteMessages,
@@ -81,7 +83,7 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRoleParams) (api.DeleteRoleRes, error) {
 	err := rh.rolesService.DeleteRole(ctx, int(params.ChatId), int(params.RoleId))
 	if err != nil {
-		if errors.Is(err, models.ErrChatNotFound) || errors.Is(err, models.ErrRoleNotFound) {
+		if errors.Is(err, models.ErrChatOrRoleNotFound) {
 			return &api.DeleteRoleNotFound{}, nil
 		}
 		logger.FromCtx(ctx).Error("delete role", zap.Error(err))
@@ -97,7 +99,26 @@ func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRolePar
 //
 // GET /roles/{roleId}
 func (rh *RolesHandler) GetRoleById(ctx context.Context, params api.GetRoleByIdParams) (api.GetRoleByIdRes, error) {
-	return &api.Role{}, nil
+	role, err := rh.rolesService.GetRoleById(ctx, int(params.ChatId), int(params.RoleId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+			return &api.GetRoleByIdNotFound{}, nil
+		}
+		logger.FromCtx(ctx).Error("get role by id", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return &api.Role{
+		ID:                api.RoleId(role.Id),
+		Name:              role.Name,
+		IsSystem:          role.IsSystem,
+		CanBanUsers:       role.CanBanUsers,
+		CanEditRoles:      role.CanEditRoles,
+		CanDeleteMessages: role.CanDeleteMessages,
+		CanGetJoinCode:    role.CanGetJoinCode,
+		CanEditChatInfo:   role.CanEditChatInfo,
+		CanDeleteChat:     role.CanDeleteChat,
+	}, nil
 }
 
 // ListRoles implements listRoles operation.

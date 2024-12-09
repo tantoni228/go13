@@ -12,6 +12,7 @@ type ChatsRepo interface {
 
 type RolesRepo interface {
 	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
+	GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error)
 	DeleteRolesForChat(ctx context.Context, chatId int) error
 	GetMemberRoleId(ctx context.Context, chatId int) (int, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
