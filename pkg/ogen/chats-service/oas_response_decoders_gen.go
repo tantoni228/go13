@@ -1262,6 +1262,9 @@ func decodeUpdateRoleResponse(resp *http.Response) (res UpdateRoleRes, _ error) 
 	case 404:
 		// Code 404.
 		return &UpdateRoleNotFound{}, nil
+	case 409:
+		// Code 409.
+		return &UpdateRoleConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil

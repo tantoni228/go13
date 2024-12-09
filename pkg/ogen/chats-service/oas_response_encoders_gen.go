@@ -814,6 +814,11 @@ func encodeUpdateRoleResponse(response UpdateRoleRes, w http.ResponseWriter) err
 
 		return nil
 
+	case *UpdateRoleConflict:
+		w.WriteHeader(409)
+
+		return nil
+
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 
