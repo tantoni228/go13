@@ -28,6 +28,7 @@ func NewMembersRepo(pg *postgres.Postgres) *MembersRepo {
 
 func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.Member) error {
 	op := "MembersRepo.AddMember"
+
 	sql, args, err := mr.sq.
 		Insert("members").
 		Columns("chat_id", "user_id", "role_id").

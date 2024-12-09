@@ -590,6 +590,11 @@ func (*UnauthorizedResponse) setRoleRes()     {}
 func (*UnauthorizedResponse) updateChatRes()  {}
 func (*UnauthorizedResponse) updateRoleRes()  {}
 
+// UpdateRoleConflict is response for UpdateRole operation.
+type UpdateRoleConflict struct{}
+
+func (*UpdateRoleConflict) updateRoleRes() {}
+
 // UpdateRoleNotFound is response for UpdateRole operation.
 type UpdateRoleNotFound struct{}
 
