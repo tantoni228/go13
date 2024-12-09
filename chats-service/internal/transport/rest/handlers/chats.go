@@ -2,14 +2,28 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/transport/rest/auth"
+	"go13/pkg/logger"
 	api "go13/pkg/ogen/chats-service"
+
+	"go.uber.org/zap"
 )
 
-type ChatsHandler struct {
+type ChatsService interface {
+	CreateChat(ctx context.Context, creatorId string, chat models.Chat) (models.Chat, error)
+	DeleteChat(ctx context.Context, chatId int) error
 }
 
-func NewChatsHandler() *ChatsHandler {
-	return &ChatsHandler{}
+type ChatsHandler struct {
+	chatsService ChatsService
+}
+
+func NewChatsHandler(chatsService ChatsService) *ChatsHandler {
+	return &ChatsHandler{
+		chatsService: chatsService,
+	}
 }
 
 // BanUser implements banUser operation.
@@ -27,7 +41,18 @@ func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (
 //
 // POST /chats
 func (ch *ChatsHandler) CreateChat(ctx context.Context, req *api.ChatInput) (api.CreateChatRes, error) {
-	return &api.Chat{}, nil
+	userId := auth.UserIdFromCtx(ctx)
+	chat := models.Chat{
+		Name:        req.GetName(),
+		Description: req.GetDescription(),
+	}
+	chat, err := ch.chatsService.CreateChat(ctx, userId, chat)
+	if err != nil {
+		logger.FromCtx(ctx).Error("ChatsHandler.CreateChat", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return &api.Chat{ID: api.ChatId(chat.Id), Name: chat.Name, Description: chat.Description}, nil
 }
 
 // DeleteChat implements deleteChat operation.
@@ -36,6 +61,15 @@ func (ch *ChatsHandler) CreateChat(ctx context.Context, req *api.ChatInput) (api
 //
 // DELETE /chats/{chatId}
 func (ch *ChatsHandler) DeleteChat(ctx context.Context, params api.DeleteChatParams) (api.DeleteChatRes, error) {
+	err := ch.chatsService.DeleteChat(ctx, int(params.ChatId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		logger.FromCtx(ctx).Error("ChatsHandler.DeleteChat", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
 	return &api.DeleteChatNoContent{}, nil
 }
 
