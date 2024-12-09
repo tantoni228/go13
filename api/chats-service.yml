@@ -61,6 +61,8 @@ paths:
           $ref: "#/components/responses/unauthorizedResponse"
         "404":
           $ref: "#/components/responses/chatNotFoundResponse"
+        "409":
+          description: you have already joined this chat
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 
@@ -244,9 +246,7 @@ paths:
         "403":
           $ref: "#/components/responses/unauthorizedResponse"
         "404":
-          description: chat or user not found
-        "409":
-          description: role with this id does not exists
+          description: chat or member or role not found
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 
@@ -293,6 +293,8 @@ paths:
           $ref: "#/components/responses/unauthorizedResponse"
         "404":
           $ref: "#/components/responses/chatNotFoundResponse"
+        "409":
+          description: role with this name already exists
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 

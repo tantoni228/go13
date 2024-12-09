@@ -177,6 +177,11 @@ func (s *CheckAccessXTargetMethod) UnmarshalText(data []byte) error {
 	}
 }
 
+// CreateRoleConflict is response for CreateRole operation.
+type CreateRoleConflict struct{}
+
+func (*CreateRoleConflict) createRoleRes() {}
+
 // DeleteChatNoContent is response for DeleteChat operation.
 type DeleteChatNoContent struct{}
 
@@ -248,6 +253,11 @@ func (*InvalidInputResponse) listRolesRes()   {}
 func (*InvalidInputResponse) setRoleRes()     {}
 func (*InvalidInputResponse) updateChatRes()  {}
 func (*InvalidInputResponse) updateRoleRes()  {}
+
+// JoinChatConflict is response for JoinChat operation.
+type JoinChatConflict struct{}
+
+func (*JoinChatConflict) joinChatRes() {}
 
 // JoinChatNoContent is response for JoinChat operation.
 type JoinChatNoContent struct{}
@@ -516,11 +526,6 @@ func (s *RoleInput) SetCanEditChatInfo(val bool) {
 func (s *RoleInput) SetCanDeleteChat(val bool) {
 	s.CanDeleteChat = val
 }
-
-// SetRoleConflict is response for SetRole operation.
-type SetRoleConflict struct{}
-
-func (*SetRoleConflict) setRoleRes() {}
 
 // SetRoleNoContent is response for SetRole operation.
 type SetRoleNoContent struct{}

@@ -289,6 +289,9 @@ func decodeCreateRoleResponse(resp *http.Response) (res CreateRoleRes, _ error) 
 	case 404:
 		// Code 404.
 		return &ChatNotFoundResponse{}, nil
+	case 409:
+		// Code 409.
+		return &CreateRoleConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil
@@ -721,6 +724,9 @@ func decodeJoinChatResponse(resp *http.Response) (res JoinChatRes, _ error) {
 	case 404:
 		// Code 404.
 		return &ChatNotFoundResponse{}, nil
+	case 409:
+		// Code 409.
+		return &JoinChatConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil
@@ -1080,9 +1086,6 @@ func decodeSetRoleResponse(resp *http.Response) (res SetRoleRes, _ error) {
 	case 404:
 		// Code 404.
 		return &SetRoleNotFound{}, nil
-	case 409:
-		// Code 409.
-		return &SetRoleConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil

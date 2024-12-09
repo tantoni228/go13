@@ -179,6 +179,11 @@ func encodeCreateRoleResponse(response CreateRoleRes, w http.ResponseWriter) err
 
 		return nil
 
+	case *CreateRoleConflict:
+		w.WriteHeader(409)
+
+		return nil
+
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 
@@ -464,6 +469,11 @@ func encodeJoinChatResponse(response JoinChatRes, w http.ResponseWriter) error {
 
 		return nil
 
+	case *JoinChatConflict:
+		w.WriteHeader(409)
+
+		return nil
+
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 
@@ -699,11 +709,6 @@ func encodeSetRoleResponse(response SetRoleRes, w http.ResponseWriter) error {
 
 	case *SetRoleNotFound:
 		w.WriteHeader(404)
-
-		return nil
-
-	case *SetRoleConflict:
-		w.WriteHeader(409)
 
 		return nil
 
