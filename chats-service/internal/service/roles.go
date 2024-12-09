@@ -61,6 +61,18 @@ func (rs *RolesService) GetRoleById(ctx context.Context, chatId int, roleId int)
 	return role, nil
 }
 
+func (rs *RolesService) UpdateRole(ctx context.Context, chatId int, roleId int, newRole models.Role) (models.Role, error) {
+	op := "RolesService.UpdateRole"
+
+	newRole.IsSystem = false
+	updatedRole, err := rs.rolesRepo.UpdateRole(ctx, chatId, roleId, newRole)
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return updatedRole, nil
+}
+
 func (rs *RolesService) DeleteRole(ctx context.Context, chatId int, roleId int) error {
 	op := "RolesService.DeleteRole"
 

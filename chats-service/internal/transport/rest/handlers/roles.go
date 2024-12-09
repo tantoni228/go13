@@ -15,6 +15,7 @@ type RolesService interface {
 	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
 	ListRoles(ctx context.Context, chatId int) ([]models.Role, error)
 	GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error)
+	UpdateRole(ctx context.Context, chatId int, roleId int, newRole models.Role) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
 
@@ -103,7 +104,7 @@ func (rh *RolesHandler) GetRoleById(ctx context.Context, params api.GetRoleByIdP
 func (rh *RolesHandler) ListRoles(ctx context.Context, params api.ListRolesParams) (api.ListRolesRes, error) {
 	roles, err := rh.rolesService.ListRoles(ctx, int(params.ChatId))
 	if err != nil {
-		logger.FromCtx(ctx).Info("list roles", zap.Error(err))
+		logger.FromCtx(ctx).Error("list roles", zap.Error(err))
 		return &api.InternalErrorResponse{}, nil
 	}
 
@@ -122,5 +123,19 @@ func (rh *RolesHandler) ListRoles(ctx context.Context, params api.ListRolesParam
 //
 // PUT /roles/{roleId}
 func (rh *RolesHandler) UpdateRole(ctx context.Context, req *api.RoleInput, params api.UpdateRoleParams) (api.UpdateRoleRes, error) {
-	return &api.Role{}, nil
+	newRole := mapper.ApiRoleInputToModelsRole(req)
+	updatedRole, err := rh.rolesService.UpdateRole(ctx, int(params.ChatId), int(params.RoleId), newRole)
+	if err != nil {
+		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+			return &api.UpdateRoleNotFound{}, nil
+		}
+		// if errors.Is(err, models.ErrRoleAlreadyExists) {
+		// 	return &api.UpdateRoleConflict{}, nil
+		// }
+
+		logger.FromCtx(ctx).Error("update role", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return mapper.ModelsRoleToApiRole(updatedRole), nil
 }

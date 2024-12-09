@@ -143,6 +143,53 @@ func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (m
 	return role, nil
 }
 
+func (rr *RolesRepo) UpdateRole(ctx context.Context, chatId int, roleId int, newRole models.Role) (models.Role, error) {
+	op := "RolesRepo.UpdateRole"
+
+	sql, args, err := rr.sq.
+		Update("roles").
+		Set("name", newRole.Name).
+		Set("is_system", newRole.IsSystem).
+		Set("can_ban_users", newRole.CanBanUsers).
+		Set("can_edit_roles", newRole.CanEditRoles).
+		Set("can_delete_messages", newRole.CanDeleteMessages).
+		Set("can_get_join_code", newRole.CanGetJoinCode).
+		Set("can_edit_chat_info", newRole.CanEditChatInfo).
+		Set("can_delete_chat", newRole.CanDeleteChat).
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"id": roleId},
+		}).
+		ToSql()
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	cmd, err := rr.getter.DefaultTrOrDB(ctx, rr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23505":
+				return models.Role{}, models.ErrRoleAlreadyExists
+			}
+		}
+		return models.Role{}, fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: cmd.RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.Role{}, models.ErrChatOrRoleNotFound
+	}
+
+	newRole.Id = roleId
+	return newRole, nil
+
+}
+
 func (rr *RolesRepo) DeleteRolesForChat(ctx context.Context, chatId int) error {
 	op := "RolesRepo.DeleteRolesForChat"
 
