@@ -30,6 +30,7 @@ func NewRolesRepo(pg *postgres.Postgres) *RolesRepo {
 
 func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error) {
 	op := "RolesRepo.CreateRole"
+
 	sql, args, err := rr.sq.
 		Insert("roles").
 		Columns(
@@ -78,6 +79,35 @@ func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Rol
 	return role, nil
 }
 
+func (rr *RolesRepo) ListRoles(ctx context.Context, chatId int) ([]models.Role, error) {
+	op := "RolesRepo.ListRoles"
+
+	sql, args, err := rr.sq.Select(
+		"id",
+		"name",
+		"is_system",
+		"can_ban_users",
+		"can_edit_roles",
+		"can_delete_messages",
+		"can_get_join_code",
+		"can_edit_chat_info",
+		"can_delete_chat",
+	).From("roles").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var roles []models.Role
+	err = rr.getter.DefaultTrOrDB(ctx, rr.db).SelectContext(ctx, &roles, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return roles, nil
+}
+
 func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error) {
 	op := "RolesRepo.GetRoleById"
 
@@ -97,7 +127,6 @@ func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (m
 			squirrel.Eq{"chat_id": chatId},
 			squirrel.Eq{"id": roleId},
 		}).ToSql()
-
 	if err != nil {
 		return models.Role{}, fmt.Errorf("%s: build query: %w", op, err)
 	}

@@ -29,6 +29,7 @@ func NewRolesService(
 
 func (rs *RolesService) CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error) {
 	op := "RolesService.CreateRole"
+
 	role.IsSystem = false
 	created, err := rs.rolesRepo.CreateRole(ctx, chatId, role)
 	if err != nil {
@@ -36,6 +37,17 @@ func (rs *RolesService) CreateRole(ctx context.Context, chatId int, role models.
 	}
 
 	return created, nil
+}
+
+func (rs *RolesService) ListRoles(ctx context.Context, chatId int) ([]models.Role, error) {
+	op := "RolesService.ListRoles"
+
+	roles, err := rs.rolesRepo.ListRoles(ctx, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return roles, nil
 }
 
 func (rs *RolesService) GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error) {

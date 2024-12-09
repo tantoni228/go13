@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/transport/rest/mapper"
 	"go13/pkg/logger"
 	api "go13/pkg/ogen/chats-service"
 
@@ -12,6 +13,7 @@ import (
 
 type RolesService interface {
 	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
+	ListRoles(ctx context.Context, chatId int) ([]models.Role, error)
 	GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
@@ -41,15 +43,7 @@ func (rh *RolesHandler) CheckAccess(ctx context.Context, params api.CheckAccessP
 //
 // POST /roles
 func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, params api.CreateRoleParams) (api.CreateRoleRes, error) {
-	role := models.Role{
-		Name:              req.GetName(),
-		CanBanUsers:       req.GetCanBanUsers(),
-		CanEditRoles:      req.GetCanEditRoles(),
-		CanDeleteMessages: req.GetCanDeleteMessages(),
-		CanGetJoinCode:    req.GetCanGetJoinCode(),
-		CanEditChatInfo:   req.GetCanEditChatInfo(),
-		CanDeleteChat:     req.GetCanDeleteChat(),
-	}
+	role := mapper.ApiRoleInputToModelsRole(req)
 	created, err := rh.rolesService.CreateRole(ctx, int(params.ChatId), role)
 	if err != nil {
 		if errors.Is(err, models.ErrChatNotFound) {
@@ -62,17 +56,7 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 		return &api.InternalErrorResponse{}, nil
 	}
 
-	return &api.Role{
-		ID:                api.RoleId(created.Id),
-		Name:              created.Name,
-		IsSystem:          created.IsSystem,
-		CanBanUsers:       created.CanBanUsers,
-		CanEditRoles:      created.CanEditRoles,
-		CanDeleteMessages: created.CanDeleteMessages,
-		CanGetJoinCode:    created.CanGetJoinCode,
-		CanEditChatInfo:   created.CanEditChatInfo,
-		CanDeleteChat:     created.CanDeleteChat,
-	}, nil
+	return mapper.ModelsRoleToApiRole(created), nil
 }
 
 // DeleteRole implements deleteRole operation.
@@ -108,17 +92,7 @@ func (rh *RolesHandler) GetRoleById(ctx context.Context, params api.GetRoleByIdP
 		return &api.InternalErrorResponse{}, nil
 	}
 
-	return &api.Role{
-		ID:                api.RoleId(role.Id),
-		Name:              role.Name,
-		IsSystem:          role.IsSystem,
-		CanBanUsers:       role.CanBanUsers,
-		CanEditRoles:      role.CanEditRoles,
-		CanDeleteMessages: role.CanDeleteMessages,
-		CanGetJoinCode:    role.CanGetJoinCode,
-		CanEditChatInfo:   role.CanEditChatInfo,
-		CanDeleteChat:     role.CanDeleteChat,
-	}, nil
+	return mapper.ModelsRoleToApiRole(role), nil
 }
 
 // ListRoles implements listRoles operation.
@@ -127,7 +101,19 @@ func (rh *RolesHandler) GetRoleById(ctx context.Context, params api.GetRoleByIdP
 //
 // GET /roles
 func (rh *RolesHandler) ListRoles(ctx context.Context, params api.ListRolesParams) (api.ListRolesRes, error) {
-	return &api.ListRolesOKApplicationJSON{}, nil
+	roles, err := rh.rolesService.ListRoles(ctx, int(params.ChatId))
+	if err != nil {
+		logger.FromCtx(ctx).Info("list roles", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	apiRoles := make([]api.Role, len(roles))
+	for i, role := range roles {
+		apiRoles[i] = *mapper.ModelsRoleToApiRole(role)
+	}
+
+	res := api.ListRolesOKApplicationJSON(apiRoles)
+	return &res, nil
 }
 
 // UpdateRole implements updateRole operation.
