@@ -11,6 +11,7 @@ import (
 )
 
 type RolesService interface {
+	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
 
@@ -39,7 +40,37 @@ func (rh *RolesHandler) CheckAccess(ctx context.Context, params api.CheckAccessP
 //
 // POST /roles
 func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, params api.CreateRoleParams) (api.CreateRoleRes, error) {
-	return &api.Role{}, nil
+	role := models.Role{
+		Name:              req.Name,
+		CanBanUsers:       req.CanBanUsers,
+		CanEditRoles:      req.CanEditRoles,
+		CanDeleteMessages: req.CanDeleteMessages,
+		CanGetJoinCode:    req.CanGetJoinCode,
+		CanEditChatInfo:   req.CanEditChatInfo,
+		CanDeleteChat:     req.CanDeleteChat,
+	}
+	created, err := rh.rolesService.CreateRole(ctx, int(params.ChatId), role)
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		if errors.Is(err, models.ErrRoleAlreadyExists) {
+			return &api.CreateRoleConflict{}, nil
+		}
+		logger.FromCtx(ctx).Error("create role", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return &api.Role{
+		ID:                api.RoleId(created.Id),
+		Name:              created.Name,
+		CanBanUsers:       created.CanBanUsers,
+		CanEditRoles:      created.CanEditRoles,
+		CanDeleteMessages: created.CanDeleteMessages,
+		CanGetJoinCode:    created.CanGetJoinCode,
+		CanEditChatInfo:   created.CanEditChatInfo,
+		CanDeleteChat:     created.CanDeleteChat,
+	}, nil
 }
 
 // DeleteRole implements deleteRole operation.

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"go13/chats-service/internal/models"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 )
@@ -23,6 +24,16 @@ func NewRolesService(
 		membersRepo: membersRepo,
 		trManager:   trManager,
 	}
+}
+
+func (rs *RolesService) CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error) {
+	op := "RolesService.CreateRole"
+	created, err := rs.rolesRepo.CreateRole(ctx, chatId, role)
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return created, nil
 }
 
 func (rs *RolesService) DeleteRole(ctx context.Context, chatId int, roleId int) error {
