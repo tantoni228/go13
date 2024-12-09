@@ -116,7 +116,7 @@ func (rr *RolesRepo) GetMemberRoleId(ctx context.Context, chatId int) (int, erro
 	err = rr.getter.DefaultTrOrDB(ctx, rr.db).QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, models.ErrChatOrRoleNotFound
+			return 0, models.ErrChatNotFound
 		}
 		return 0, fmt.Errorf("%s: QueryRowContext: %w", op, err)
 	}
@@ -149,7 +149,7 @@ func (rr *RolesRepo) DeleteRole(ctx context.Context, chatId int, roleId int) err
 	}
 
 	if affected == 0 {
-		return models.ErrChatOrRoleNotFound
+		return models.ErrRoleNotFound
 	}
 
 	return nil

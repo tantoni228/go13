@@ -50,7 +50,7 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRoleParams) (api.DeleteRoleRes, error) {
 	err := rh.rolesService.DeleteRole(ctx, int(params.ChatId), int(params.RoleId))
 	if err != nil {
-		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+		if errors.Is(err, models.ErrChatNotFound) || errors.Is(err, models.ErrRoleNotFound) {
 			return &api.DeleteRoleNotFound{}, nil
 		}
 		logger.FromCtx(ctx).Error("delete role", zap.Error(err))
