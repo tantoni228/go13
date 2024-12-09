@@ -129,9 +129,9 @@ func (rh *RolesHandler) UpdateRole(ctx context.Context, req *api.RoleInput, para
 		if errors.Is(err, models.ErrChatOrRoleNotFound) {
 			return &api.UpdateRoleNotFound{}, nil
 		}
-		// if errors.Is(err, models.ErrRoleAlreadyExists) {
-		// 	return &api.UpdateRoleConflict{}, nil
-		// }
+		if errors.Is(err, models.ErrRoleAlreadyExists) {
+			return &api.UpdateRoleConflict{}, nil
+		}
 
 		logger.FromCtx(ctx).Error("update role", zap.Error(err))
 		return &api.InternalErrorResponse{}, nil
