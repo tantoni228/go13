@@ -14,7 +14,6 @@ import (
 var regexMap = map[string]ogenregex.Regexp{
 	"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,25}$": ogenregex.MustCompile("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,25}$"),
 	"^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$":                            ogenregex.MustCompile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"),
-	"uuid":                                                             ogenregex.MustCompile("uuid"),
 }
 
 type (

@@ -8,12 +8,7 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
-	"github.com/ogen-go/ogen/ogenregex"
 )
-
-var regexMap = map[string]ogenregex.Regexp{
-	"uuid": ogenregex.MustCompile("uuid"),
-}
 
 type (
 	optionFunc[C any] func(*C)

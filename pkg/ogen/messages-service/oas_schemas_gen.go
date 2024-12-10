@@ -2,6 +2,10 @@
 
 package api
 
+import (
+	"github.com/google/uuid"
+)
+
 type BearerAuth struct {
 	Token string
 }
@@ -175,4 +179,4 @@ type UpdateMessageNotFound struct{}
 
 func (*UpdateMessageNotFound) updateMessageRes() {}
 
-type UserId string
+type UserId uuid.UUID

@@ -12,7 +12,7 @@ components:
 
     userId:
       type: string
-      pattern: uuid
+      format: uuid
 
     chatId:
       type: integer

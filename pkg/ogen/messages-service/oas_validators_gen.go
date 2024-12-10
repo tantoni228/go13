@@ -3,8 +3,6 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/go-faster/errors"
 
 	"github.com/ogen-go/ogen/validate"
@@ -14,46 +12,6 @@ func (s ListMessagesOKApplicationJSON) Validate() error {
 	alias := ([]Message)(s)
 	if alias == nil {
 		return errors.New("nil is invalid value")
-	}
-	var failures []validate.FieldError
-	for i, elem := range alias {
-		if err := func() error {
-			if err := elem.Validate(); err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			failures = append(failures, validate.FieldError{
-				Name:  fmt.Sprintf("[%d]", i),
-				Error: err,
-			})
-		}
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *Message) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.SenderID.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "sender_id",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
 	}
 	return nil
 }
@@ -85,22 +43,6 @@ func (s *MessageInput) Validate() error {
 	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s UserId) Validate() error {
-	alias := (string)(s)
-	if err := (validate.String{
-		MinLength:    0,
-		MinLengthSet: false,
-		MaxLength:    0,
-		MaxLengthSet: false,
-		Email:        false,
-		Hostname:     false,
-		Regex:        regexMap["uuid"],
-	}).Validate(string(alias)); err != nil {
-		return errors.Wrap(err, "string")
 	}
 	return nil
 }
