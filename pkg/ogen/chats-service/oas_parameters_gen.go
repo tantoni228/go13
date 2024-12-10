@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/go-faster/errors"
+	"github.com/google/uuid"
 
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
@@ -113,14 +114,14 @@ func decodeBanUserParams(args [2]string, argsEscaped bool, r *http.Request) (par
 			})
 
 			if err := func() error {
-				var paramsDotUserIdVal string
+				var paramsDotUserIdVal uuid.UUID
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
 						return err
 					}
 
-					c, err := conv.ToString(val)
+					c, err := conv.ToUUID(val)
 					if err != nil {
 						return err
 					}
@@ -131,14 +132,6 @@ func decodeBanUserParams(args [2]string, argsEscaped bool, r *http.Request) (par
 					return err
 				}
 				params.UserId = UserId(paramsDotUserIdVal)
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := params.UserId.Validate(); err != nil {
-					return err
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -1182,14 +1175,14 @@ func decodeSetRoleParams(args [2]string, argsEscaped bool, r *http.Request) (par
 			})
 
 			if err := func() error {
-				var paramsDotUserIdVal string
+				var paramsDotUserIdVal uuid.UUID
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
 						return err
 					}
 
-					c, err := conv.ToString(val)
+					c, err := conv.ToUUID(val)
 					if err != nil {
 						return err
 					}
@@ -1200,14 +1193,6 @@ func decodeSetRoleParams(args [2]string, argsEscaped bool, r *http.Request) (par
 					return err
 				}
 				params.UserId = UserId(paramsDotUserIdVal)
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := params.UserId.Validate(); err != nil {
-					return err
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -1324,14 +1309,14 @@ func decodeUnbanUserParams(args [2]string, argsEscaped bool, r *http.Request) (p
 			})
 
 			if err := func() error {
-				var paramsDotUserIdVal string
+				var paramsDotUserIdVal uuid.UUID
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
 						return err
 					}
 
-					c, err := conv.ToString(val)
+					c, err := conv.ToUUID(val)
 					if err != nil {
 						return err
 					}
@@ -1342,14 +1327,6 @@ func decodeUnbanUserParams(args [2]string, argsEscaped bool, r *http.Request) (p
 					return err
 				}
 				params.UserId = UserId(paramsDotUserIdVal)
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := params.UserId.Validate(); err != nil {
-					return err
-				}
 				return nil
 			}(); err != nil {
 				return err

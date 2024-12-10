@@ -142,45 +142,6 @@ func (s *SignUpReq) Validate() error {
 	return nil
 }
 
-func (s *User) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.ID.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "id",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s UserId) Validate() error {
-	alias := (string)(s)
-	if err := (validate.String{
-		MinLength:    0,
-		MinLengthSet: false,
-		MaxLength:    0,
-		MaxLengthSet: false,
-		Email:        false,
-		Hostname:     false,
-		Regex:        regexMap["uuid"],
-	}).Validate(string(alias)); err != nil {
-		return errors.Wrap(err, "string")
-	}
-	return nil
-}
-
 func (s *UserInput) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
