@@ -24,12 +24,12 @@ func NewMessagesHandler(srv *service.MessagesService) *MessagesHandler {
 //
 // DELETE /messages/{messageId}
 func (m *MessagesHandler) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (api.DeleteMessageRes, error) {
-	resp, err := m.service.DeleteMessage(ctx, api.DeleteMessageParams{MessageId: params.MessageId, ChatId: params.ChatId})
+	err := m.service.DeleteMessage(ctx, api.DeleteMessageParams{MessageId: params.MessageId, ChatId: params.ChatId})
 	if err != nil {
 		return nil, fmt.Errorf("DeleteMessage: %w", err)
 	}
 
-	return resp, nil
+	return nil, nil
 }
 // GetMessageById implements getMessageById operation.
 //

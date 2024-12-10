@@ -26,7 +26,7 @@ var (
 )
 
 var (
-	configPath = flag.String("config", "messages-service/configs/example.yml", "path to config file")
+	configPath = flag.String("config", "configs/example.yml", "path to config file")
 )
 
 func main() {

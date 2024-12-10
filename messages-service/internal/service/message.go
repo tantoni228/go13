@@ -6,25 +6,15 @@ import (
 )
 
 type MessagesRepo interface {
-	// DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (api.DeleteMessageRes, error)
-	// GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error)
+	DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (error)
+	GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error)
 	// ListMessages(ctx context.Context, params api.ListMessagesParams) (api.ListMessagesRes, error)
 	SendMessage(ctx context.Context, req *api.MessageInput, params api.SendMessageParams) (api.SendMessageRes, error)
-	// UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error)
+	UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error)
 }
 
 type MessagesService struct {
 	Repo MessagesRepo
-}
-
-// DeleteMessage implements api.Handler.
-func (s *MessagesService) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (api.DeleteMessageRes, error) {
-	panic("unimplemented")
-}
-
-// GetMessageById implements api.Handler.
-func (s *MessagesService) GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error) {
-	panic("unimplemented")
 }
 
 // ListMessages implements api.Handler.
@@ -32,22 +22,17 @@ func (s *MessagesService) ListMessages(ctx context.Context, params api.ListMessa
 	panic("unimplemented")
 }
 
-// UpdateMessage implements api.Handler.
-func (s *MessagesService) UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error) {
-	panic("unimplemented")
-}
-
 func NewMessageService(repo MessagesRepo) *MessagesService {
 	return &MessagesService{repo}
 }
 
-// func (s *MessagesService) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (api.DeleteMessageRes, error) {
-// 	return s.Repo.DeleteMessage(ctx, params)
-// }
+func (s *MessagesService) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (error) {
+	return s.Repo.DeleteMessage(ctx, params)
+}
 
-// func (s *MessagesService) GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error) {
-// 	return s.Repo.GetMessageById(ctx, params)
-// }
+func (s *MessagesService) GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error) {
+	return s.Repo.GetMessageById(ctx, params)
+}
 
 // func (s *MessagesService) ListMessages(ctx context.Context, params api.ListMessagesParams) (api.ListMessagesRes, error) {
 // 	return s.Repo.ListMessages(ctx, params)
@@ -57,6 +42,6 @@ func (s *MessagesService) SendMessage(ctx context.Context, req *api.MessageInput
 	return s.Repo.SendMessage(ctx, req, params)
 }
 
-// func (s *MessagesService) UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error) {
-// 	return s.Repo.UpdateMessage(ctx, req, params)
-// }
+func (s *MessagesService) UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error) {
+	return s.Repo.UpdateMessage(ctx, req, params)
+}

@@ -98,7 +98,7 @@ func (s UserId) Validate() error {
 		MaxLengthSet: false,
 		Email:        false,
 		Hostname:     false,
-		Regex:        regexMap["uuid"],
+		Regex:        regexMap["^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$"],
 	}).Validate(string(alias)); err != nil {
 		return errors.Wrap(err, "string")
 	}
