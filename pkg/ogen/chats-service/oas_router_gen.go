@@ -233,6 +233,34 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									break
 								}
 
+								if len(elem) == 0 {
+									break
+								}
+								switch elem[0] {
+								case 'b': // Prefix: "banned"
+									origElem := elem
+									if l := len("banned"); len(elem) >= l && elem[0:l] == "banned" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch r.Method {
+										case "GET":
+											s.handleListBannedUsersRequest([1]string{
+												args[0],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, "GET")
+										}
+
+										return
+									}
+
+									elem = origElem
+								}
 								// Param: "userId"
 								// Match until "/"
 								idx := strings.IndexByte(elem, '/')
@@ -295,6 +323,30 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											switch r.Method {
 											case "POST":
 												s.handleSetRoleRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, "POST")
+											}
+
+											return
+										}
+
+										elem = origElem
+									case 'u': // Prefix: "unban"
+										origElem := elem
+										if l := len("unban"); len(elem) >= l && elem[0:l] == "unban" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch r.Method {
+											case "POST":
+												s.handleUnbanUserRequest([2]string{
 													args[0],
 													args[1],
 												}, elemIsEscaped, w, r)
@@ -707,6 +759,36 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									break
 								}
 
+								if len(elem) == 0 {
+									break
+								}
+								switch elem[0] {
+								case 'b': // Prefix: "banned"
+									origElem := elem
+									if l := len("banned"); len(elem) >= l && elem[0:l] == "banned" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch method {
+										case "GET":
+											r.name = ListBannedUsersOperation
+											r.summary = "get banned members for chat"
+											r.operationID = "listBannedUsers"
+											r.pathPattern = "/chats/{chatId}/members/banned"
+											r.args = args
+											r.count = 1
+											return r, true
+										default:
+											return
+										}
+									}
+
+									elem = origElem
+								}
 								// Param: "userId"
 								// Match until "/"
 								idx := strings.IndexByte(elem, '/')
@@ -773,6 +855,31 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												r.summary = "Set role to user"
 												r.operationID = "setRole"
 												r.pathPattern = "/chats/{chatId}/members/{userId}/set-role"
+												r.args = args
+												r.count = 2
+												return r, true
+											default:
+												return
+											}
+										}
+
+										elem = origElem
+									case 'u': // Prefix: "unban"
+										origElem := elem
+										if l := len("unban"); len(elem) >= l && elem[0:l] == "unban" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										if len(elem) == 0 {
+											// Leaf node.
+											switch method {
+											case "POST":
+												r.name = UnbanUserOperation
+												r.summary = "Unban user in chat"
+												r.operationID = "UnbanUser"
+												r.pathPattern = "/chats/{chatId}/members/{userId}/unban"
 												r.args = args
 												r.count = 2
 												return r, true

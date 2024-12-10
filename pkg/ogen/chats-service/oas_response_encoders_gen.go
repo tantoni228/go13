@@ -43,6 +43,11 @@ func encodeBanUserResponse(response BanUserRes, w http.ResponseWriter) error {
 
 		return nil
 
+	case *BanUserConflict:
+		w.WriteHeader(409)
+
+		return nil
+
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 
@@ -523,6 +528,65 @@ func encodeLeaveChatResponse(response LeaveChatRes, w http.ResponseWriter) error
 	}
 }
 
+func encodeListBannedUsersResponse(response ListBannedUsersRes, w http.ResponseWriter) error {
+	switch response := response.(type) {
+	case *ListBannedUsersOKApplicationJSON:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *InvalidInputResponse:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(400)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *UnauthenticatedResponse:
+		w.WriteHeader(401)
+
+		return nil
+
+	case *UnauthorizedResponse:
+		w.WriteHeader(403)
+
+		return nil
+
+	case *ChatNotFoundResponse:
+		w.WriteHeader(404)
+
+		return nil
+
+	case *InternalErrorResponse:
+		w.WriteHeader(500)
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeListChatsResponse(response ListChatsRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *ListChatsOKApplicationJSON:
@@ -709,6 +773,55 @@ func encodeSetRoleResponse(response SetRoleRes, w http.ResponseWriter) error {
 
 	case *SetRoleNotFound:
 		w.WriteHeader(404)
+
+		return nil
+
+	case *InternalErrorResponse:
+		w.WriteHeader(500)
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodeUnbanUserResponse(response UnbanUserRes, w http.ResponseWriter) error {
+	switch response := response.(type) {
+	case *UnbanUserNoContent:
+		w.WriteHeader(204)
+
+		return nil
+
+	case *InvalidInputResponse:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(400)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *UnauthenticatedResponse:
+		w.WriteHeader(401)
+
+		return nil
+
+	case *UnauthorizedResponse:
+		w.WriteHeader(403)
+
+		return nil
+
+	case *UnbanUserNotFound:
+		w.WriteHeader(404)
+
+		return nil
+
+	case *UnbanUserConflict:
+		w.WriteHeader(409)
 
 		return nil
 

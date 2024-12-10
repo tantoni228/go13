@@ -67,6 +67,12 @@ type ChatsInvoker interface {
 	//
 	// POST /chats/{chatId}/leave
 	LeaveChat(ctx context.Context, params LeaveChatParams) (LeaveChatRes, error)
+	// ListBannedUsers invokes listBannedUsers operation.
+	//
+	// Get banned members for chat.
+	//
+	// GET /chats/{chatId}/members/banned
+	ListBannedUsers(ctx context.Context, params ListBannedUsersParams) (ListBannedUsersRes, error)
 	// ListChats invokes listChats operation.
 	//
 	// Get chats infos for user.
@@ -85,6 +91,12 @@ type ChatsInvoker interface {
 	//
 	// POST /chats/{chatId}/members/{userId}/set-role
 	SetRole(ctx context.Context, request *SetRoleReq, params SetRoleParams) (SetRoleRes, error)
+	// UnbanUser invokes UnbanUser operation.
+	//
+	// Unban user in chat.
+	//
+	// POST /chats/{chatId}/members/{userId}/unban
+	UnbanUser(ctx context.Context, params UnbanUserParams) (UnbanUserRes, error)
 	// UpdateChat invokes updateChat operation.
 	//
 	// Update chat info.
@@ -1218,6 +1230,97 @@ func (c *Client) sendLeaveChat(ctx context.Context, params LeaveChatParams) (res
 	return result, nil
 }
 
+// ListBannedUsers invokes listBannedUsers operation.
+//
+// Get banned members for chat.
+//
+// GET /chats/{chatId}/members/banned
+func (c *Client) ListBannedUsers(ctx context.Context, params ListBannedUsersParams) (ListBannedUsersRes, error) {
+	res, err := c.sendListBannedUsers(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendListBannedUsers(ctx context.Context, params ListBannedUsersParams) (res ListBannedUsersRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/chats/"
+	{
+		// Encode "chatId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "chatId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			if unwrapped := int(params.ChatId); true {
+				return e.EncodeValue(conv.IntToString(unwrapped))
+			}
+			return nil
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/members/banned"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityBearerAuth(ctx, ListBannedUsersOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeListBannedUsersResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // ListChats invokes listChats operation.
 //
 // Get chats infos for user.
@@ -1576,6 +1679,119 @@ func (c *Client) sendSetRole(ctx context.Context, request *SetRoleReq, params Se
 	defer resp.Body.Close()
 
 	result, err := decodeSetRoleResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// UnbanUser invokes UnbanUser operation.
+//
+// Unban user in chat.
+//
+// POST /chats/{chatId}/members/{userId}/unban
+func (c *Client) UnbanUser(ctx context.Context, params UnbanUserParams) (UnbanUserRes, error) {
+	res, err := c.sendUnbanUser(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendUnbanUser(ctx context.Context, params UnbanUserParams) (res UnbanUserRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/chats/"
+	{
+		// Encode "chatId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "chatId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			if unwrapped := int(params.ChatId); true {
+				return e.EncodeValue(conv.IntToString(unwrapped))
+			}
+			return nil
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/members/"
+	{
+		// Encode "userId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			if unwrapped := string(params.UserId); true {
+				return e.EncodeValue(conv.StringToString(unwrapped))
+			}
+			return nil
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/unban"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityBearerAuth(ctx, UnbanUserOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeUnbanUserResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

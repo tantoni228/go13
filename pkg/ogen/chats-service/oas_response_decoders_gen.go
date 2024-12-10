@@ -63,6 +63,9 @@ func decodeBanUserResponse(resp *http.Response) (res BanUserRes, _ error) {
 	case 404:
 		// Code 404.
 		return &BanUserNotFound{}, nil
+	case 409:
+		// Code 409.
+		return &BanUserConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil
@@ -787,6 +790,103 @@ func decodeLeaveChatResponse(resp *http.Response) (res LeaveChatRes, _ error) {
 	return res, validate.UnexpectedStatusCode(resp.StatusCode)
 }
 
+func decodeListBannedUsersResponse(resp *http.Response) (res ListBannedUsersRes, _ error) {
+	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return res, errors.Wrap(err, "parse media type")
+		}
+		switch {
+		case ct == "application/json":
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return res, err
+			}
+			d := jx.DecodeBytes(buf)
+
+			var response ListBannedUsersOKApplicationJSON
+			if err := func() error {
+				if err := response.Decode(d); err != nil {
+					return err
+				}
+				if err := d.Skip(); err != io.EOF {
+					return errors.New("unexpected trailing data")
+				}
+				return nil
+			}(); err != nil {
+				err = &ogenerrors.DecodeBodyError{
+					ContentType: ct,
+					Body:        buf,
+					Err:         err,
+				}
+				return res, err
+			}
+			// Validate response.
+			if err := func() error {
+				if err := response.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return res, errors.Wrap(err, "validate")
+			}
+			return &response, nil
+		default:
+			return res, validate.InvalidContentType(ct)
+		}
+	case 400:
+		// Code 400.
+		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return res, errors.Wrap(err, "parse media type")
+		}
+		switch {
+		case ct == "application/json":
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return res, err
+			}
+			d := jx.DecodeBytes(buf)
+
+			var response InvalidInputResponse
+			if err := func() error {
+				if err := response.Decode(d); err != nil {
+					return err
+				}
+				if err := d.Skip(); err != io.EOF {
+					return errors.New("unexpected trailing data")
+				}
+				return nil
+			}(); err != nil {
+				err = &ogenerrors.DecodeBodyError{
+					ContentType: ct,
+					Body:        buf,
+					Err:         err,
+				}
+				return res, err
+			}
+			return &response, nil
+		default:
+			return res, validate.InvalidContentType(ct)
+		}
+	case 401:
+		// Code 401.
+		return &UnauthenticatedResponse{}, nil
+	case 403:
+		// Code 403.
+		return &UnauthorizedResponse{}, nil
+	case 404:
+		// Code 404.
+		return &ChatNotFoundResponse{}, nil
+	case 500:
+		// Code 500.
+		return &InternalErrorResponse{}, nil
+	}
+	return res, validate.UnexpectedStatusCode(resp.StatusCode)
+}
+
 func decodeListChatsResponse(resp *http.Response) (res ListChatsRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
@@ -1086,6 +1186,65 @@ func decodeSetRoleResponse(resp *http.Response) (res SetRoleRes, _ error) {
 	case 404:
 		// Code 404.
 		return &SetRoleNotFound{}, nil
+	case 500:
+		// Code 500.
+		return &InternalErrorResponse{}, nil
+	}
+	return res, validate.UnexpectedStatusCode(resp.StatusCode)
+}
+
+func decodeUnbanUserResponse(resp *http.Response) (res UnbanUserRes, _ error) {
+	switch resp.StatusCode {
+	case 204:
+		// Code 204.
+		return &UnbanUserNoContent{}, nil
+	case 400:
+		// Code 400.
+		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return res, errors.Wrap(err, "parse media type")
+		}
+		switch {
+		case ct == "application/json":
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return res, err
+			}
+			d := jx.DecodeBytes(buf)
+
+			var response InvalidInputResponse
+			if err := func() error {
+				if err := response.Decode(d); err != nil {
+					return err
+				}
+				if err := d.Skip(); err != io.EOF {
+					return errors.New("unexpected trailing data")
+				}
+				return nil
+			}(); err != nil {
+				err = &ogenerrors.DecodeBodyError{
+					ContentType: ct,
+					Body:        buf,
+					Err:         err,
+				}
+				return res, err
+			}
+			return &response, nil
+		default:
+			return res, validate.InvalidContentType(ct)
+		}
+	case 401:
+		// Code 401.
+		return &UnauthenticatedResponse{}, nil
+	case 403:
+		// Code 403.
+		return &UnauthorizedResponse{}, nil
+	case 404:
+		// Code 404.
+		return &UnbanUserNotFound{}, nil
+	case 409:
+		// Code 409.
+		return &UnbanUserConflict{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil

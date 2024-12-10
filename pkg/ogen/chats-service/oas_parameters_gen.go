@@ -873,6 +873,79 @@ func decodeLeaveChatParams(args [1]string, argsEscaped bool, r *http.Request) (p
 	return params, nil
 }
 
+// ListBannedUsersParams is parameters of listBannedUsers operation.
+type ListBannedUsersParams struct {
+	// Chat id.
+	ChatId ChatId
+}
+
+func unpackListBannedUsersParams(packed middleware.Parameters) (params ListBannedUsersParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "chatId",
+			In:   "path",
+		}
+		params.ChatId = packed[key].(ChatId)
+	}
+	return params
+}
+
+func decodeListBannedUsersParams(args [1]string, argsEscaped bool, r *http.Request) (params ListBannedUsersParams, _ error) {
+	// Decode path: chatId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "chatId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				var paramsDotChatIdVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotChatIdVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.ChatId = ChatId(paramsDotChatIdVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "chatId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // ListMembersParams is parameters of listMembers operation.
 type ListMembersParams struct {
 	// Chat id.
@@ -1038,6 +1111,148 @@ func unpackSetRoleParams(packed middleware.Parameters) (params SetRoleParams) {
 }
 
 func decodeSetRoleParams(args [2]string, argsEscaped bool, r *http.Request) (params SetRoleParams, _ error) {
+	// Decode path: chatId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "chatId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				var paramsDotChatIdVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotChatIdVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.ChatId = ChatId(paramsDotChatIdVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "chatId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: userId.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				var paramsDotUserIdVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotUserIdVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.UserId = UserId(paramsDotUserIdVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := params.UserId.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "userId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// UnbanUserParams is parameters of UnbanUser operation.
+type UnbanUserParams struct {
+	// Chat id.
+	ChatId ChatId
+	// User id.
+	UserId UserId
+}
+
+func unpackUnbanUserParams(packed middleware.Parameters) (params UnbanUserParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "chatId",
+			In:   "path",
+		}
+		params.ChatId = packed[key].(ChatId)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "userId",
+			In:   "path",
+		}
+		params.UserId = packed[key].(UserId)
+	}
+	return params
+}
+
+func decodeUnbanUserParams(args [2]string, argsEscaped bool, r *http.Request) (params UnbanUserParams, _ error) {
 	// Decode path: chatId.
 	if err := func() error {
 		param := args[0]

@@ -35,6 +35,24 @@ func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (
 	return &api.BanUserNoContent{}, nil
 }
 
+// UnbanUser implements UnbanUser operation.
+//
+// Unban user in chat.
+//
+// POST /chats/{chatId}/members/{userId}/unban
+func (ch *ChatsHandler) UnbanUser(ctx context.Context, params api.UnbanUserParams) (api.UnbanUserRes, error) {
+	return &api.UnbanUserNoContent{}, nil
+}
+
+// ListBannedUsers implements listBannedUsers operation.
+//
+// Get banned members for chat.
+//
+// GET /chats/{chatId}/members/banned
+func (ch *ChatsHandler) ListBannedUsers(ctx context.Context, params api.ListBannedUsersParams) (api.ListBannedUsersRes, error) {
+	return &api.ListBannedUsersOKApplicationJSON{}, nil
+}
+
 // CreateChat implements createChat operation.
 //
 // Create new chat.

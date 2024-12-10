@@ -45,6 +45,10 @@ type LeaveChatRes interface {
 	leaveChatRes()
 }
 
+type ListBannedUsersRes interface {
+	listBannedUsersRes()
+}
+
 type ListChatsRes interface {
 	listChatsRes()
 }
@@ -59,6 +63,10 @@ type ListRolesRes interface {
 
 type SetRoleRes interface {
 	setRoleRes()
+}
+
+type UnbanUserRes interface {
+	unbanUserRes()
 }
 
 type UpdateChatRes interface {

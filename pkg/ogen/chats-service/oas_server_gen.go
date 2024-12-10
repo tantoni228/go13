@@ -58,6 +58,12 @@ type ChatsHandler interface {
 	//
 	// POST /chats/{chatId}/leave
 	LeaveChat(ctx context.Context, params LeaveChatParams) (LeaveChatRes, error)
+	// ListBannedUsers implements listBannedUsers operation.
+	//
+	// Get banned members for chat.
+	//
+	// GET /chats/{chatId}/members/banned
+	ListBannedUsers(ctx context.Context, params ListBannedUsersParams) (ListBannedUsersRes, error)
 	// ListChats implements listChats operation.
 	//
 	// Get chats infos for user.
@@ -76,6 +82,12 @@ type ChatsHandler interface {
 	//
 	// POST /chats/{chatId}/members/{userId}/set-role
 	SetRole(ctx context.Context, req *SetRoleReq, params SetRoleParams) (SetRoleRes, error)
+	// UnbanUser implements UnbanUser operation.
+	//
+	// Unban user in chat.
+	//
+	// POST /chats/{chatId}/members/{userId}/unban
+	UnbanUser(ctx context.Context, params UnbanUserParams) (UnbanUserRes, error)
 	// UpdateChat implements updateChat operation.
 	//
 	// Update chat info.

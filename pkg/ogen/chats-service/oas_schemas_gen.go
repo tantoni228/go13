@@ -6,6 +6,11 @@ import (
 	"github.com/go-faster/errors"
 )
 
+// BanUserConflict is response for BanUser operation.
+type BanUserConflict struct{}
+
+func (*BanUserConflict) banUserRes() {}
+
 // BanUserNoContent is response for BanUser operation.
 type BanUserNoContent struct{}
 
@@ -15,6 +20,20 @@ func (*BanUserNoContent) banUserRes() {}
 type BanUserNotFound struct{}
 
 func (*BanUserNotFound) banUserRes() {}
+
+type BannedMembersResponseItem struct {
+	UserID UserId `json:"user_id"`
+}
+
+// GetUserID returns the value of UserID.
+func (s *BannedMembersResponseItem) GetUserID() UserId {
+	return s.UserID
+}
+
+// SetUserID sets the value of UserID.
+func (s *BannedMembersResponseItem) SetUserID(val UserId) {
+	s.UserID = val
+}
 
 type BearerAuth struct {
 	Token string
@@ -102,15 +121,16 @@ func (s *ChatInput) SetDescription(val string) {
 // Ref: #/components/responses/chatNotFoundResponse
 type ChatNotFoundResponse struct{}
 
-func (*ChatNotFoundResponse) createRoleRes()  {}
-func (*ChatNotFoundResponse) deleteChatRes()  {}
-func (*ChatNotFoundResponse) getChatByIdRes() {}
-func (*ChatNotFoundResponse) getJoinCodeRes() {}
-func (*ChatNotFoundResponse) joinChatRes()    {}
-func (*ChatNotFoundResponse) leaveChatRes()   {}
-func (*ChatNotFoundResponse) listMembersRes() {}
-func (*ChatNotFoundResponse) listRolesRes()   {}
-func (*ChatNotFoundResponse) updateChatRes()  {}
+func (*ChatNotFoundResponse) createRoleRes()      {}
+func (*ChatNotFoundResponse) deleteChatRes()      {}
+func (*ChatNotFoundResponse) getChatByIdRes()     {}
+func (*ChatNotFoundResponse) getJoinCodeRes()     {}
+func (*ChatNotFoundResponse) joinChatRes()        {}
+func (*ChatNotFoundResponse) leaveChatRes()       {}
+func (*ChatNotFoundResponse) listBannedUsersRes() {}
+func (*ChatNotFoundResponse) listMembersRes()     {}
+func (*ChatNotFoundResponse) listRolesRes()       {}
+func (*ChatNotFoundResponse) updateChatRes()      {}
 
 // CheckAccessNoContent is response for CheckAccess operation.
 type CheckAccessNoContent struct{}
@@ -205,23 +225,25 @@ func (*GetRoleByIdNotFound) getRoleByIdRes() {}
 // Ref: #/components/responses/internalErrorResponse
 type InternalErrorResponse struct{}
 
-func (*InternalErrorResponse) banUserRes()     {}
-func (*InternalErrorResponse) checkAccessRes() {}
-func (*InternalErrorResponse) createChatRes()  {}
-func (*InternalErrorResponse) createRoleRes()  {}
-func (*InternalErrorResponse) deleteChatRes()  {}
-func (*InternalErrorResponse) deleteRoleRes()  {}
-func (*InternalErrorResponse) getChatByIdRes() {}
-func (*InternalErrorResponse) getJoinCodeRes() {}
-func (*InternalErrorResponse) getRoleByIdRes() {}
-func (*InternalErrorResponse) joinChatRes()    {}
-func (*InternalErrorResponse) leaveChatRes()   {}
-func (*InternalErrorResponse) listChatsRes()   {}
-func (*InternalErrorResponse) listMembersRes() {}
-func (*InternalErrorResponse) listRolesRes()   {}
-func (*InternalErrorResponse) setRoleRes()     {}
-func (*InternalErrorResponse) updateChatRes()  {}
-func (*InternalErrorResponse) updateRoleRes()  {}
+func (*InternalErrorResponse) banUserRes()         {}
+func (*InternalErrorResponse) checkAccessRes()     {}
+func (*InternalErrorResponse) createChatRes()      {}
+func (*InternalErrorResponse) createRoleRes()      {}
+func (*InternalErrorResponse) deleteChatRes()      {}
+func (*InternalErrorResponse) deleteRoleRes()      {}
+func (*InternalErrorResponse) getChatByIdRes()     {}
+func (*InternalErrorResponse) getJoinCodeRes()     {}
+func (*InternalErrorResponse) getRoleByIdRes()     {}
+func (*InternalErrorResponse) joinChatRes()        {}
+func (*InternalErrorResponse) leaveChatRes()       {}
+func (*InternalErrorResponse) listBannedUsersRes() {}
+func (*InternalErrorResponse) listChatsRes()       {}
+func (*InternalErrorResponse) listMembersRes()     {}
+func (*InternalErrorResponse) listRolesRes()       {}
+func (*InternalErrorResponse) setRoleRes()         {}
+func (*InternalErrorResponse) unbanUserRes()       {}
+func (*InternalErrorResponse) updateChatRes()      {}
+func (*InternalErrorResponse) updateRoleRes()      {}
 
 type InvalidInputResponse struct {
 	Message string `json:"message"`
@@ -237,22 +259,24 @@ func (s *InvalidInputResponse) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*InvalidInputResponse) banUserRes()     {}
-func (*InvalidInputResponse) checkAccessRes() {}
-func (*InvalidInputResponse) createChatRes()  {}
-func (*InvalidInputResponse) createRoleRes()  {}
-func (*InvalidInputResponse) deleteChatRes()  {}
-func (*InvalidInputResponse) deleteRoleRes()  {}
-func (*InvalidInputResponse) getChatByIdRes() {}
-func (*InvalidInputResponse) getJoinCodeRes() {}
-func (*InvalidInputResponse) getRoleByIdRes() {}
-func (*InvalidInputResponse) joinChatRes()    {}
-func (*InvalidInputResponse) leaveChatRes()   {}
-func (*InvalidInputResponse) listMembersRes() {}
-func (*InvalidInputResponse) listRolesRes()   {}
-func (*InvalidInputResponse) setRoleRes()     {}
-func (*InvalidInputResponse) updateChatRes()  {}
-func (*InvalidInputResponse) updateRoleRes()  {}
+func (*InvalidInputResponse) banUserRes()         {}
+func (*InvalidInputResponse) checkAccessRes()     {}
+func (*InvalidInputResponse) createChatRes()      {}
+func (*InvalidInputResponse) createRoleRes()      {}
+func (*InvalidInputResponse) deleteChatRes()      {}
+func (*InvalidInputResponse) deleteRoleRes()      {}
+func (*InvalidInputResponse) getChatByIdRes()     {}
+func (*InvalidInputResponse) getJoinCodeRes()     {}
+func (*InvalidInputResponse) getRoleByIdRes()     {}
+func (*InvalidInputResponse) joinChatRes()        {}
+func (*InvalidInputResponse) leaveChatRes()       {}
+func (*InvalidInputResponse) listBannedUsersRes() {}
+func (*InvalidInputResponse) listMembersRes()     {}
+func (*InvalidInputResponse) listRolesRes()       {}
+func (*InvalidInputResponse) setRoleRes()         {}
+func (*InvalidInputResponse) unbanUserRes()       {}
+func (*InvalidInputResponse) updateChatRes()      {}
+func (*InvalidInputResponse) updateRoleRes()      {}
 
 // JoinChatConflict is response for JoinChat operation.
 type JoinChatConflict struct{}
@@ -298,6 +322,10 @@ func (*JoinCodeResponse) getJoinCodeRes() {}
 type LeaveChatNoContent struct{}
 
 func (*LeaveChatNoContent) leaveChatRes() {}
+
+type ListBannedUsersOKApplicationJSON []BannedMembersResponseItem
+
+func (*ListBannedUsersOKApplicationJSON) listBannedUsersRes() {}
 
 type ListChatsOKApplicationJSON []Chat
 
@@ -554,41 +582,60 @@ func (s *SetRoleReq) SetRoleID(val RoleId) {
 // Ref: #/components/responses/unauthenticatedResponse
 type UnauthenticatedResponse struct{}
 
-func (*UnauthenticatedResponse) banUserRes()     {}
-func (*UnauthenticatedResponse) checkAccessRes() {}
-func (*UnauthenticatedResponse) createChatRes()  {}
-func (*UnauthenticatedResponse) createRoleRes()  {}
-func (*UnauthenticatedResponse) deleteChatRes()  {}
-func (*UnauthenticatedResponse) deleteRoleRes()  {}
-func (*UnauthenticatedResponse) getChatByIdRes() {}
-func (*UnauthenticatedResponse) getJoinCodeRes() {}
-func (*UnauthenticatedResponse) getRoleByIdRes() {}
-func (*UnauthenticatedResponse) joinChatRes()    {}
-func (*UnauthenticatedResponse) leaveChatRes()   {}
-func (*UnauthenticatedResponse) listChatsRes()   {}
-func (*UnauthenticatedResponse) listMembersRes() {}
-func (*UnauthenticatedResponse) listRolesRes()   {}
-func (*UnauthenticatedResponse) setRoleRes()     {}
-func (*UnauthenticatedResponse) updateChatRes()  {}
-func (*UnauthenticatedResponse) updateRoleRes()  {}
+func (*UnauthenticatedResponse) banUserRes()         {}
+func (*UnauthenticatedResponse) checkAccessRes()     {}
+func (*UnauthenticatedResponse) createChatRes()      {}
+func (*UnauthenticatedResponse) createRoleRes()      {}
+func (*UnauthenticatedResponse) deleteChatRes()      {}
+func (*UnauthenticatedResponse) deleteRoleRes()      {}
+func (*UnauthenticatedResponse) getChatByIdRes()     {}
+func (*UnauthenticatedResponse) getJoinCodeRes()     {}
+func (*UnauthenticatedResponse) getRoleByIdRes()     {}
+func (*UnauthenticatedResponse) joinChatRes()        {}
+func (*UnauthenticatedResponse) leaveChatRes()       {}
+func (*UnauthenticatedResponse) listBannedUsersRes() {}
+func (*UnauthenticatedResponse) listChatsRes()       {}
+func (*UnauthenticatedResponse) listMembersRes()     {}
+func (*UnauthenticatedResponse) listRolesRes()       {}
+func (*UnauthenticatedResponse) setRoleRes()         {}
+func (*UnauthenticatedResponse) unbanUserRes()       {}
+func (*UnauthenticatedResponse) updateChatRes()      {}
+func (*UnauthenticatedResponse) updateRoleRes()      {}
 
 // Ref: #/components/responses/unauthorizedResponse
 type UnauthorizedResponse struct{}
 
-func (*UnauthorizedResponse) banUserRes()     {}
-func (*UnauthorizedResponse) checkAccessRes() {}
-func (*UnauthorizedResponse) createRoleRes()  {}
-func (*UnauthorizedResponse) deleteChatRes()  {}
-func (*UnauthorizedResponse) deleteRoleRes()  {}
-func (*UnauthorizedResponse) getChatByIdRes() {}
-func (*UnauthorizedResponse) getJoinCodeRes() {}
-func (*UnauthorizedResponse) getRoleByIdRes() {}
-func (*UnauthorizedResponse) joinChatRes()    {}
-func (*UnauthorizedResponse) listMembersRes() {}
-func (*UnauthorizedResponse) listRolesRes()   {}
-func (*UnauthorizedResponse) setRoleRes()     {}
-func (*UnauthorizedResponse) updateChatRes()  {}
-func (*UnauthorizedResponse) updateRoleRes()  {}
+func (*UnauthorizedResponse) banUserRes()         {}
+func (*UnauthorizedResponse) checkAccessRes()     {}
+func (*UnauthorizedResponse) createRoleRes()      {}
+func (*UnauthorizedResponse) deleteChatRes()      {}
+func (*UnauthorizedResponse) deleteRoleRes()      {}
+func (*UnauthorizedResponse) getChatByIdRes()     {}
+func (*UnauthorizedResponse) getJoinCodeRes()     {}
+func (*UnauthorizedResponse) getRoleByIdRes()     {}
+func (*UnauthorizedResponse) joinChatRes()        {}
+func (*UnauthorizedResponse) listBannedUsersRes() {}
+func (*UnauthorizedResponse) listMembersRes()     {}
+func (*UnauthorizedResponse) listRolesRes()       {}
+func (*UnauthorizedResponse) setRoleRes()         {}
+func (*UnauthorizedResponse) unbanUserRes()       {}
+func (*UnauthorizedResponse) updateChatRes()      {}
+func (*UnauthorizedResponse) updateRoleRes()      {}
+
+// UnbanUserConflict is response for UnbanUser operation.
+type UnbanUserConflict struct{}
+
+func (*UnbanUserConflict) unbanUserRes() {}
+
+// UnbanUserNoContent is response for UnbanUser operation.
+type UnbanUserNoContent struct{}
+
+func (*UnbanUserNoContent) unbanUserRes() {}
+
+// UnbanUserNotFound is response for UnbanUser operation.
+type UnbanUserNotFound struct{}
+
+func (*UnbanUserNotFound) unbanUserRes() {}
 
 // UpdateRoleConflict is response for UpdateRole operation.
 type UpdateRoleConflict struct{}
