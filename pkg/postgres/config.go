@@ -17,6 +17,26 @@ type Config struct {
 	ConnMaxIdleTime time.Duration `yaml:"conn_max_idle_time" env:"POSTGRES_CONN_MAX_IDLE_TIME" env-default:"2m"`
 }
 
+// Deadline implements context.Context.
+func (cfg Config) Deadline() (deadline time.Time, ok bool) {
+	panic("unimplemented")
+}
+
+// Done implements context.Context.
+func (cfg Config) Done() <-chan struct{} {
+	panic("unimplemented")
+}
+
+// Err implements context.Context.
+func (cfg Config) Err() error {
+	panic("unimplemented")
+}
+
+// Value implements context.Context.
+func (cfg Config) Value(key any) any {
+	panic("unimplemented")
+}
+
 func (cfg Config) GetConnString() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",

@@ -1,0 +1,8 @@
+server_port: 8080
+log_level: debug
+postgres:
+  host: localhost
+  port: 5432
+  db: messages
+  user: messages-service
+  password: secret
