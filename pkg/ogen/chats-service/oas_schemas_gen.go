@@ -4,7 +4,6 @@ package api
 
 import (
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 )
 
 // BanUserConflict is response for BanUser operation.
@@ -137,11 +136,6 @@ func (*ChatNotFoundResponse) updateChatRes()      {}
 type CheckAccessNoContent struct{}
 
 func (*CheckAccessNoContent) checkAccessRes() {}
-
-// CheckAccessNotFound is response for CheckAccess operation.
-type CheckAccessNotFound struct{}
-
-func (*CheckAccessNotFound) checkAccessRes() {}
 
 type CheckAccessXTargetMethod string
 
@@ -648,4 +642,4 @@ type UpdateRoleNotFound struct{}
 
 func (*UpdateRoleNotFound) updateRoleRes() {}
 
-type UserId uuid.UUID
+type UserId string

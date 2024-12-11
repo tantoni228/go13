@@ -68,6 +68,14 @@ func encodeCheckTokenResponse(response CheckTokenRes, w http.ResponseWriter) err
 func encodeGetMeResponse(response GetMeRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *User:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -97,6 +105,14 @@ func encodeGetMeResponse(response GetMeRes, w http.ResponseWriter) error {
 func encodeGetUserByIdResponse(response GetUserByIdRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *User:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -206,6 +222,14 @@ func encodeSignUpResponse(response SignUpRes, w http.ResponseWriter) error {
 func encodeUpdateMeResponse(response UpdateMeRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *User:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

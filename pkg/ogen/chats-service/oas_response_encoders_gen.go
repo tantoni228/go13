@@ -87,11 +87,6 @@ func encodeCheckAccessResponse(response CheckAccessRes, w http.ResponseWriter) e
 
 		return nil
 
-	case *CheckAccessNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 

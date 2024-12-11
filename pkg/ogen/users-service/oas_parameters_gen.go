@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
@@ -53,14 +52,14 @@ func decodeGetUserByIdParams(args [1]string, argsEscaped bool, r *http.Request) 
 			})
 
 			if err := func() error {
-				var paramsDotUserIdVal uuid.UUID
+				var paramsDotUserIdVal string
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
 						return err
 					}
 
-					c, err := conv.ToUUID(val)
+					c, err := conv.ToString(val)
 					if err != nil {
 						return err
 					}
@@ -71,6 +70,14 @@ func decodeGetUserByIdParams(args [1]string, argsEscaped bool, r *http.Request) 
 					return err
 				}
 				params.UserId = UserId(paramsDotUserIdVal)
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := params.UserId.Validate(); err != nil {
+					return err
+				}
 				return nil
 			}(); err != nil {
 				return err

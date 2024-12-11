@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 
 	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
@@ -368,8 +367,8 @@ func (c *Client) sendGetUserById(ctx context.Context, params GetUserByIdParams) 
 			Explode: false,
 		})
 		if err := func() error {
-			if unwrapped := uuid.UUID(params.UserId); true {
-				return e.EncodeValue(conv.UUIDToString(unwrapped))
+			if unwrapped := string(params.UserId); true {
+				return e.EncodeValue(conv.StringToString(unwrapped))
 			}
 			return nil
 		}(); err != nil {

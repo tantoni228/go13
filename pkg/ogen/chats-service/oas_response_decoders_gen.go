@@ -119,9 +119,6 @@ func decodeCheckAccessResponse(resp *http.Response) (res CheckAccessRes, _ error
 	case 403:
 		// Code 403.
 		return &UnauthorizedResponse{}, nil
-	case 404:
-		// Code 404.
-		return &CheckAccessNotFound{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil

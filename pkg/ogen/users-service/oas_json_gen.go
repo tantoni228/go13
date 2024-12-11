@@ -8,9 +8,7 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
-	"github.com/google/uuid"
 
-	"github.com/ogen-go/ogen/json"
 	"github.com/ogen-go/ogen/validate"
 )
 
@@ -762,9 +760,9 @@ func (s *User) UnmarshalJSON(data []byte) error {
 
 // Encode encodes UserId as json.
 func (s UserId) Encode(e *jx.Encoder) {
-	unwrapped := uuid.UUID(s)
+	unwrapped := string(s)
 
-	json.EncodeUUID(e, unwrapped)
+	e.Str(unwrapped)
 }
 
 // Decode decodes UserId from json.
@@ -772,10 +770,10 @@ func (s *UserId) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode UserId to nil")
 	}
-	var unwrapped uuid.UUID
+	var unwrapped string
 	if err := func() error {
-		v, err := json.DecodeUUID(d)
-		unwrapped = v
+		v, err := d.Str()
+		unwrapped = string(v)
 		if err != nil {
 			return err
 		}
