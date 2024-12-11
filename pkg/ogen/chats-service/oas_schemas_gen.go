@@ -137,6 +137,11 @@ type CheckAccessNoContent struct{}
 
 func (*CheckAccessNoContent) checkAccessRes() {}
 
+// CheckAccessNotFound is response for CheckAccess operation.
+type CheckAccessNotFound struct{}
+
+func (*CheckAccessNotFound) checkAccessRes() {}
+
 type CheckAccessXTargetMethod string
 
 const (

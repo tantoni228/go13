@@ -383,6 +383,8 @@ paths:
           $ref: "#/components/responses/unauthenticatedResponse"
         "403":
           $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          description: target uri or resource not found
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 
