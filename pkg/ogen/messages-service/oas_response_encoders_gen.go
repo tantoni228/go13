@@ -56,6 +56,14 @@ func encodeDeleteMessageResponse(response DeleteMessageRes, w http.ResponseWrite
 func encodeGetMessageByIdResponse(response GetMessageByIdRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Message:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -166,6 +174,14 @@ func encodeListMessagesResponse(response ListMessagesRes, w http.ResponseWriter)
 func encodeSendMessageResponse(response SendMessageRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Message:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
@@ -217,6 +233,14 @@ func encodeSendMessageResponse(response SendMessageRes, w http.ResponseWriter) e
 func encodeUpdateMessageResponse(response UpdateMessageRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Message:
+		if err := func() error {
+			if err := response.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrap(err, "validate")
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 
