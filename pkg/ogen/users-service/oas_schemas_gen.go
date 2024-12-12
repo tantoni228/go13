@@ -2,10 +2,6 @@
 
 package api
 
-import (
-	"github.com/google/uuid"
-)
-
 type BearerAuth struct {
 	Token string
 }
@@ -277,7 +273,7 @@ func (*User) getMeRes()       {}
 func (*User) getUserByIdRes() {}
 func (*User) updateMeRes()    {}
 
-type UserId uuid.UUID
+type UserId string
 
 // Ref: #/components/schemas/userInput
 type UserInput struct {

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
 
@@ -79,9 +78,6 @@ func (rs *RolesService) DeleteRole(ctx context.Context, chatId int, roleId int) 
 	err := rs.trManager.Do(ctx, func(ctx context.Context) error {
 		memberRoleId, err := rs.rolesRepo.GetMemberRoleId(ctx, chatId)
 		if err != nil {
-			if errors.Is(err, models.ErrChatNotFound) {
-				return fmt.Errorf("get member role id: %w", models.ErrChatOrRoleNotFound)
-			}
 			return fmt.Errorf("get member role id: %w", err)
 		}
 

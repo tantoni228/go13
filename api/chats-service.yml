@@ -384,7 +384,7 @@ paths:
         "403":
           $ref: "#/components/responses/unauthorizedResponse"
         "404":
-          description: target uri does not exists
+          description: target uri or resource not found
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 

@@ -7,6 +7,7 @@ import (
 
 type ChatsRepo interface {
 	CreateChat(ctx context.Context, chat models.Chat) (models.Chat, error)
+	GetChatById(ctx context.Context, chatId int) (models.Chat, error)
 	DeleteChat(ctx context.Context, chatId int) error
 }
 
@@ -17,6 +18,7 @@ type RolesRepo interface {
 	UpdateRole(ctx context.Context, chatId int, roleId int, newRole models.Role) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 	DeleteRolesForChat(ctx context.Context, chatId int) error
+	GetRoleForMember(ctx context.Context, chatId int, userId string) (models.Role, error)
 	GetMemberRoleId(ctx context.Context, chatId int) (int, error)
 }
 

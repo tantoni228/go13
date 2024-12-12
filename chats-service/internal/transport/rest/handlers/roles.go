@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/transport/rest/auth"
 	"go13/chats-service/internal/transport/rest/mapper"
 	"go13/pkg/logger"
 	api "go13/pkg/ogen/chats-service"
+	"net/url"
 
 	"go.uber.org/zap"
 )
@@ -19,13 +21,19 @@ type RolesService interface {
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
 }
 
-type RolesHandler struct {
-	rolesService RolesService
+type AccessService interface {
+	CheckAccess(ctx context.Context, userId string, method string, u *url.URL) error
 }
 
-func NewRolesHandler(rolesService RolesService) *RolesHandler {
+type RolesHandler struct {
+	rolesService  RolesService
+	accessService AccessService
+}
+
+func NewRolesHandler(rolesService RolesService, accessService AccessService) *RolesHandler {
 	return &RolesHandler{
-		rolesService: rolesService,
+		rolesService:  rolesService,
+		accessService: accessService,
 	}
 }
 
@@ -35,6 +43,45 @@ func NewRolesHandler(rolesService RolesService) *RolesHandler {
 //
 // GET /roles/check-access
 func (rh *RolesHandler) CheckAccess(ctx context.Context, params api.CheckAccessParams) (api.CheckAccessRes, error) {
+	userId := auth.UserIdFromCtx(ctx)
+	logger.FromCtx(ctx).Debug(
+		"check access",
+		zap.String("uri", params.XTargetURI),
+		zap.String("method", string(params.XTargetMethod)),
+		zap.String("user_id", userId),
+	)
+	u, err := url.ParseRequestURI(params.XTargetURI)
+	if err != nil {
+		return &api.InvalidInputResponse{
+			Message: "invalid X-Target-Uri parameter",
+		}, nil
+	}
+	err = rh.accessService.CheckAccess(ctx, userId, string(params.XTargetMethod), u)
+	if err != nil {
+		notFoundErrors := []error{
+			models.ErrEndpointNotFound,
+			models.ErrRoleNotFound,
+			models.ErrChatNotFound,
+			models.ErrMemberNotFound,
+			models.ErrMessageNotFound,
+		}
+		for _, targerErr := range notFoundErrors {
+			if errors.Is(err, targerErr) {
+				return &api.CheckAccessNotFound{}, nil
+			}
+		}
+		if errors.Is(err, models.ErrAccessForbidden) {
+			return &api.UnauthorizedResponse{}, nil
+		}
+		if errors.Is(err, models.ErrInvalidRouteParams) {
+			return &api.InvalidInputResponse{
+				Message: "invalid route parameters",
+			}, nil
+		}
+		logger.FromCtx(ctx).Error("check access", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
 	return &api.CheckAccessNoContent{}, nil
 }
 
@@ -68,7 +115,10 @@ func (rh *RolesHandler) CreateRole(ctx context.Context, req *api.RoleInput, para
 func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRoleParams) (api.DeleteRoleRes, error) {
 	err := rh.rolesService.DeleteRole(ctx, int(params.ChatId), int(params.RoleId))
 	if err != nil {
-		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.DeleteRoleNotFound{}, nil
+		}
+		if errors.Is(err, models.ErrRoleNotFound) {
 			return &api.DeleteRoleNotFound{}, nil
 		}
 		logger.FromCtx(ctx).Error("delete role", zap.Error(err))
@@ -86,7 +136,7 @@ func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRolePar
 func (rh *RolesHandler) GetRoleById(ctx context.Context, params api.GetRoleByIdParams) (api.GetRoleByIdRes, error) {
 	role, err := rh.rolesService.GetRoleById(ctx, int(params.ChatId), int(params.RoleId))
 	if err != nil {
-		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+		if errors.Is(err, models.ErrRoleNotFound) {
 			return &api.GetRoleByIdNotFound{}, nil
 		}
 		logger.FromCtx(ctx).Error("get role by id", zap.Error(err))
@@ -126,7 +176,7 @@ func (rh *RolesHandler) UpdateRole(ctx context.Context, req *api.RoleInput, para
 	newRole := mapper.ApiRoleInputToModelsRole(req)
 	updatedRole, err := rh.rolesService.UpdateRole(ctx, int(params.ChatId), int(params.RoleId), newRole)
 	if err != nil {
-		if errors.Is(err, models.ErrChatOrRoleNotFound) {
+		if errors.Is(err, models.ErrRoleNotFound) {
 			return &api.UpdateRoleNotFound{}, nil
 		}
 		if errors.Is(err, models.ErrRoleAlreadyExists) {

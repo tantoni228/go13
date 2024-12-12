@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 
 	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
@@ -243,8 +242,8 @@ func (c *Client) sendBanUser(ctx context.Context, params BanUserParams) (res Ban
 			Explode: false,
 		})
 		if err := func() error {
-			if unwrapped := uuid.UUID(params.UserId); true {
-				return e.EncodeValue(conv.UUIDToString(unwrapped))
+			if unwrapped := string(params.UserId); true {
+				return e.EncodeValue(conv.StringToString(unwrapped))
 			}
 			return nil
 		}(); err != nil {
@@ -1616,8 +1615,8 @@ func (c *Client) sendSetRole(ctx context.Context, request *SetRoleReq, params Se
 			Explode: false,
 		})
 		if err := func() error {
-			if unwrapped := uuid.UUID(params.UserId); true {
-				return e.EncodeValue(conv.UUIDToString(unwrapped))
+			if unwrapped := string(params.UserId); true {
+				return e.EncodeValue(conv.StringToString(unwrapped))
 			}
 			return nil
 		}(); err != nil {
@@ -1732,8 +1731,8 @@ func (c *Client) sendUnbanUser(ctx context.Context, params UnbanUserParams) (res
 			Explode: false,
 		})
 		if err := func() error {
-			if unwrapped := uuid.UUID(params.UserId); true {
-				return e.EncodeValue(conv.UUIDToString(unwrapped))
+			if unwrapped := string(params.UserId); true {
+				return e.EncodeValue(conv.StringToString(unwrapped))
 			}
 			return nil
 		}(); err != nil {

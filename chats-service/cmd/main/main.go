@@ -63,9 +63,10 @@ func main() {
 
 	chatsService := service.NewChatsService(chatsRepo, rolesRepo, membersRepo, trManager)
 	rolesService := service.NewRolesService(rolesRepo, membersRepo, trManager)
+	accessService := service.NewAccessService(chatsRepo, rolesRepo)
 
 	chatsHandler := handlers.NewChatsHandler(chatsService)
-	rolesHandler := handlers.NewRolesHandler(rolesService)
+	rolesHandler := handlers.NewRolesHandler(rolesService, accessService)
 
 	server, err := rest.NewServer(chatsHandler, rolesHandler, l, cfg.Port)
 	if err != nil {

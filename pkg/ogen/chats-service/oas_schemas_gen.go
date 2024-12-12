@@ -4,7 +4,6 @@ package api
 
 import (
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 )
 
 // BanUserConflict is response for BanUser operation.
@@ -648,4 +647,4 @@ type UpdateRoleNotFound struct{}
 
 func (*UpdateRoleNotFound) updateRoleRes() {}
 
-type UserId uuid.UUID
+type UserId string
