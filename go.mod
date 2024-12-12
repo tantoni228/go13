@@ -20,6 +20,7 @@ require (
 	github.com/avito-tech/go-transaction-manager/drivers/sql/v2 v2.0.0-rc9.1 // indirect
 	github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2 v2.0.0 // indirect
 	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.0 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect

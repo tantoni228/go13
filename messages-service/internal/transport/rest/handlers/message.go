@@ -29,7 +29,7 @@ func (m *MessagesHandler) DeleteMessage(ctx context.Context, params api.DeleteMe
 		return nil, fmt.Errorf("DeleteMessage: %w", err)
 	}
 
-	return nil, nil
+	return &api.DeleteMessageNoContent{}, nil
 }
 // GetMessageById implements getMessageById operation.
 //
@@ -50,12 +50,23 @@ func (m *MessagesHandler)  GetMessageById(ctx context.Context, params api.GetMes
 //
 // GET /messages
 func (m *MessagesHandler)  ListMessages(ctx context.Context, params api.ListMessagesParams) (api.ListMessagesRes, error) {
-	resp, err := m.service.ListMessages(ctx, api.ListMessagesParams{ChatId: params.ChatId, Limit: params.Limit, Offset: params.Offset})
+	messages, err := m.service.ListMessages(ctx, api.ListMessagesParams{ChatId: params.ChatId, Limit: params.Limit, Offset: params.Offset})
 	if err != nil {
 		return nil, fmt.Errorf("ListMessages: %w", err)
 	}
 
-	return resp, nil
+	apiMessages := make([]api.Message, len(messages))
+	for i, message := range messages {
+		apiMessages[i] = *&api.Message{
+			ID: message.ID,
+			SenderID: message.SenderID,
+			Message: message.Message,
+			Edited: message.Edited,
+			SendTimestamp: message.SendTimestamp,
+		}
+	}
+	res := api.ListMessagesOKApplicationJSON(apiMessages)
+	return &res, nil
 }
 // SendMessage implements sendMessage operation.
 //

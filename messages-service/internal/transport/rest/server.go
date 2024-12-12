@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"fmt"
+	"go13/messages-service/internal/transport/rest/auth"
 	"go13/messages-service/internal/transport/rest/handlers"
 	"go13/messages-service/internal/transport/rest/middlewares"
 	api "go13/pkg/ogen/messages-service"
@@ -34,7 +35,7 @@ func NewServer(
 
 	apiSrv, err := api.NewServer(&handler{
 		messagesHandler,
-	}, &securityHandler{})
+	}, auth.NewSecurityHandler())
 	if err != nil {
 		return nil, err
 	}
