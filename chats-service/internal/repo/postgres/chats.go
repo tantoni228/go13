@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
 	"go13/pkg/postgres"
@@ -44,6 +46,31 @@ func (cr *ChatsRepo) CreateChat(ctx context.Context, chat models.Chat) (models.C
 	}
 
 	chat.Id = id
+	return chat, nil
+}
+
+func (cr *ChatsRepo) GetChatById(ctx context.Context, chatId int) (models.Chat, error) {
+	op := "ChatsRepo.GetChatById"
+
+	query, args, err := cr.sq.
+		Select("id", "name", "description").
+		From("chats").
+		Where(squirrel.Eq{"id": chatId}).
+		ToSql()
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var chat models.Chat
+	err = cr.getter.DefaultTrOrDB(ctx, cr.db).GetContext(ctx, &chat, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Chat{}, models.ErrChatNotFound
+		}
+
+		return models.Chat{}, fmt.Errorf("%s: GetContext: %w", op, err)
+	}
+
 	return chat, nil
 }
 

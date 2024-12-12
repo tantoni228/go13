@@ -135,7 +135,7 @@ func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (m
 	err = rr.getter.DefaultTrOrDB(ctx, rr.db).GetContext(ctx, &role, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Role{}, models.ErrChatOrRoleNotFound
+			return models.Role{}, models.ErrRoleNotFound
 		}
 		return models.Role{}, fmt.Errorf("%s: GetContext: %w", op, err)
 	}
@@ -182,7 +182,7 @@ func (rr *RolesRepo) UpdateRole(ctx context.Context, chatId int, roleId int, new
 	}
 
 	if affected == 0 {
-		return models.Role{}, models.ErrChatOrRoleNotFound
+		return models.Role{}, models.ErrRoleNotFound
 	}
 
 	newRole.Id = roleId
@@ -207,6 +207,43 @@ func (rr *RolesRepo) DeleteRolesForChat(ctx context.Context, chatId int) error {
 	}
 
 	return nil
+}
+
+func (rr *RolesRepo) GetRoleForMember(ctx context.Context, chatId int, userId string) (models.Role, error) {
+	op := "RolesRepo.GetRoleForMember"
+
+	query, args, err := rr.sq.
+		Select(
+			"roles.id as id",
+			"name",
+			"is_system",
+			"can_ban_users",
+			"can_edit_roles",
+			"can_delete_messages",
+			"can_get_join_code",
+			"can_edit_chat_info",
+			"can_delete_chat",
+		).From("roles").
+		Join("members on members.chat_id = roles.chat_id AND members.role_id = roles.id").
+		Where(squirrel.And{
+			squirrel.Eq{"members.chat_id": chatId},
+			squirrel.Eq{"members.user_id": userId},
+		}).
+		ToSql()
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var role models.Role
+	err = rr.getter.DefaultTrOrDB(ctx, rr.db).GetContext(ctx, &role, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Role{}, models.ErrMemberNotFound
+		}
+		return models.Role{}, fmt.Errorf("%s: GetContext: %w", op, err)
+	}
+
+	return role, nil
 }
 
 func (rr *RolesRepo) GetMemberRoleId(ctx context.Context, chatId int) (int, error) {
@@ -261,7 +298,7 @@ func (rr *RolesRepo) DeleteRole(ctx context.Context, chatId int, roleId int) err
 	}
 
 	if affected == 0 {
-		return models.ErrChatOrRoleNotFound
+		return models.ErrRoleNotFound
 	}
 
 	return nil
