@@ -97,7 +97,7 @@ components:
           type: string
         is_system:
           type: boolean
-        can_ban_users:
+        can_manage_members:
           type: boolean
         can_edit_roles:
           type: boolean
@@ -113,7 +113,7 @@ components:
         - id
         - name
         - is_system
-        - can_ban_users
+        - can_manage_members
         - can_edit_roles
         - can_delete_messages
         - can_get_join_code
@@ -125,7 +125,7 @@ components:
       properties:
         name:
           type: string
-        can_ban_users:
+        can_manage_members:
           type: boolean
         can_edit_roles:
           type: boolean
@@ -139,7 +139,7 @@ components:
           type: boolean
       required:
         - name
-        - can_ban_users
+        - can_manage_members
         - can_edit_roles
         - can_delete_messages
         - can_get_join_code

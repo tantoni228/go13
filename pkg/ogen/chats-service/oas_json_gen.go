@@ -1006,8 +1006,8 @@ func (s *Role) encodeFields(e *jx.Encoder) {
 		e.Bool(s.IsSystem)
 	}
 	{
-		e.FieldStart("can_ban_users")
-		e.Bool(s.CanBanUsers)
+		e.FieldStart("can_manage_members")
+		e.Bool(s.CanManageMembers)
 	}
 	{
 		e.FieldStart("can_edit_roles")
@@ -1035,7 +1035,7 @@ var jsonFieldsNameOfRole = [9]string{
 	0: "id",
 	1: "name",
 	2: "is_system",
-	3: "can_ban_users",
+	3: "can_manage_members",
 	4: "can_edit_roles",
 	5: "can_delete_messages",
 	6: "can_get_join_code",
@@ -1086,17 +1086,17 @@ func (s *Role) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"is_system\"")
 			}
-		case "can_ban_users":
+		case "can_manage_members":
 			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Bool()
-				s.CanBanUsers = bool(v)
+				s.CanManageMembers = bool(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"can_ban_users\"")
+				return errors.Wrap(err, "decode field \"can_manage_members\"")
 			}
 		case "can_edit_roles":
 			requiredBitSet[0] |= 1 << 4
@@ -1269,8 +1269,8 @@ func (s *RoleInput) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("can_ban_users")
-		e.Bool(s.CanBanUsers)
+		e.FieldStart("can_manage_members")
+		e.Bool(s.CanManageMembers)
 	}
 	{
 		e.FieldStart("can_edit_roles")
@@ -1296,7 +1296,7 @@ func (s *RoleInput) encodeFields(e *jx.Encoder) {
 
 var jsonFieldsNameOfRoleInput = [7]string{
 	0: "name",
-	1: "can_ban_users",
+	1: "can_manage_members",
 	2: "can_edit_roles",
 	3: "can_delete_messages",
 	4: "can_get_join_code",
@@ -1325,17 +1325,17 @@ func (s *RoleInput) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "can_ban_users":
+		case "can_manage_members":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Bool()
-				s.CanBanUsers = bool(v)
+				s.CanManageMembers = bool(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"can_ban_users\"")
+				return errors.Wrap(err, "decode field \"can_manage_members\"")
 			}
 		case "can_edit_roles":
 			requiredBitSet[0] |= 1 << 2

@@ -4,7 +4,7 @@ type Role struct {
 	Id                int    `db:"id"`
 	Name              string `db:"name"`
 	IsSystem          bool   `db:"is_system"`
-	CanBanUsers       bool   `db:"can_ban_users"`
+	CanManageMembers  bool   `db:"can_manage_members"`
 	CanEditRoles      bool   `db:"can_edit_roles"`
 	CanDeleteMessages bool   `db:"can_delete_messages"`
 	CanGetJoinCode    bool   `db:"can_get_join_code"`
@@ -21,7 +21,7 @@ var (
 	RoleCreator = Role{
 		Name:              "creator",
 		IsSystem:          true,
-		CanBanUsers:       true,
+		CanManageMembers:  true,
 		CanEditRoles:      true,
 		CanDeleteMessages: true,
 		CanGetJoinCode:    true,

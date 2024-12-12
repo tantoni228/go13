@@ -10,7 +10,7 @@ func ModelsRoleToApiRole(role models.Role) *api.Role {
 		ID:                api.RoleId(role.Id),
 		Name:              role.Name,
 		IsSystem:          role.IsSystem,
-		CanBanUsers:       role.CanBanUsers,
+		CanManageMembers:  role.CanManageMembers,
 		CanEditRoles:      role.CanEditRoles,
 		CanDeleteMessages: role.CanDeleteMessages,
 		CanGetJoinCode:    role.CanGetJoinCode,
@@ -22,7 +22,7 @@ func ModelsRoleToApiRole(role models.Role) *api.Role {
 func ApiRoleInputToModelsRole(roleInput *api.RoleInput) models.Role {
 	return models.Role{
 		Name:              roleInput.GetName(),
-		CanBanUsers:       roleInput.GetCanBanUsers(),
+		CanManageMembers:  roleInput.GetCanManageMembers(),
 		CanEditRoles:      roleInput.GetCanEditRoles(),
 		CanDeleteMessages: roleInput.GetCanDeleteMessages(),
 		CanGetJoinCode:    roleInput.GetCanGetJoinCode(),

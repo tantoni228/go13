@@ -370,7 +370,7 @@ type Role struct {
 	ID                RoleId `json:"id"`
 	Name              string `json:"name"`
 	IsSystem          bool   `json:"is_system"`
-	CanBanUsers       bool   `json:"can_ban_users"`
+	CanManageMembers  bool   `json:"can_manage_members"`
 	CanEditRoles      bool   `json:"can_edit_roles"`
 	CanDeleteMessages bool   `json:"can_delete_messages"`
 	CanGetJoinCode    bool   `json:"can_get_join_code"`
@@ -393,9 +393,9 @@ func (s *Role) GetIsSystem() bool {
 	return s.IsSystem
 }
 
-// GetCanBanUsers returns the value of CanBanUsers.
-func (s *Role) GetCanBanUsers() bool {
-	return s.CanBanUsers
+// GetCanManageMembers returns the value of CanManageMembers.
+func (s *Role) GetCanManageMembers() bool {
+	return s.CanManageMembers
 }
 
 // GetCanEditRoles returns the value of CanEditRoles.
@@ -438,9 +438,9 @@ func (s *Role) SetIsSystem(val bool) {
 	s.IsSystem = val
 }
 
-// SetCanBanUsers sets the value of CanBanUsers.
-func (s *Role) SetCanBanUsers(val bool) {
-	s.CanBanUsers = val
+// SetCanManageMembers sets the value of CanManageMembers.
+func (s *Role) SetCanManageMembers(val bool) {
+	s.CanManageMembers = val
 }
 
 // SetCanEditRoles sets the value of CanEditRoles.
@@ -477,7 +477,7 @@ type RoleId int
 // Ref: #/components/schemas/roleInput
 type RoleInput struct {
 	Name              string `json:"name"`
-	CanBanUsers       bool   `json:"can_ban_users"`
+	CanManageMembers  bool   `json:"can_manage_members"`
 	CanEditRoles      bool   `json:"can_edit_roles"`
 	CanDeleteMessages bool   `json:"can_delete_messages"`
 	CanGetJoinCode    bool   `json:"can_get_join_code"`
@@ -490,9 +490,9 @@ func (s *RoleInput) GetName() string {
 	return s.Name
 }
 
-// GetCanBanUsers returns the value of CanBanUsers.
-func (s *RoleInput) GetCanBanUsers() bool {
-	return s.CanBanUsers
+// GetCanManageMembers returns the value of CanManageMembers.
+func (s *RoleInput) GetCanManageMembers() bool {
+	return s.CanManageMembers
 }
 
 // GetCanEditRoles returns the value of CanEditRoles.
@@ -525,9 +525,9 @@ func (s *RoleInput) SetName(val string) {
 	s.Name = val
 }
 
-// SetCanBanUsers sets the value of CanBanUsers.
-func (s *RoleInput) SetCanBanUsers(val bool) {
-	s.CanBanUsers = val
+// SetCanManageMembers sets the value of CanManageMembers.
+func (s *RoleInput) SetCanManageMembers(val bool) {
+	s.CanManageMembers = val
 }
 
 // SetCanEditRoles sets the value of CanEditRoles.

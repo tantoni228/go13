@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS roles RENAME COLUMN can_manage_members TO can_ban_users;

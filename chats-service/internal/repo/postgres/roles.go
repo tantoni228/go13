@@ -37,7 +37,7 @@ func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Rol
 			"chat_id",
 			"name",
 			"is_system",
-			"can_ban_users",
+			"can_manage_members",
 			"can_edit_roles",
 			"can_delete_messages",
 			"can_get_join_code",
@@ -48,7 +48,7 @@ func (rr *RolesRepo) CreateRole(ctx context.Context, chatId int, role models.Rol
 			chatId,
 			role.Name,
 			role.IsSystem,
-			role.CanBanUsers,
+			role.CanManageMembers,
 			role.CanEditRoles,
 			role.CanDeleteMessages,
 			role.CanGetJoinCode,
@@ -86,7 +86,7 @@ func (rr *RolesRepo) ListRoles(ctx context.Context, chatId int) ([]models.Role, 
 		"id",
 		"name",
 		"is_system",
-		"can_ban_users",
+		"can_manage_members",
 		"can_edit_roles",
 		"can_delete_messages",
 		"can_get_join_code",
@@ -116,7 +116,7 @@ func (rr *RolesRepo) GetRoleById(ctx context.Context, chatId int, roleId int) (m
 			"id",
 			"name",
 			"is_system",
-			"can_ban_users",
+			"can_manage_members",
 			"can_edit_roles",
 			"can_delete_messages",
 			"can_get_join_code",
@@ -150,7 +150,7 @@ func (rr *RolesRepo) UpdateRole(ctx context.Context, chatId int, roleId int, new
 		Update("roles").
 		Set("name", newRole.Name).
 		Set("is_system", newRole.IsSystem).
-		Set("can_ban_users", newRole.CanBanUsers).
+		Set("can_manage_members", newRole.CanManageMembers).
 		Set("can_edit_roles", newRole.CanEditRoles).
 		Set("can_delete_messages", newRole.CanDeleteMessages).
 		Set("can_get_join_code", newRole.CanGetJoinCode).
@@ -217,7 +217,7 @@ func (rr *RolesRepo) GetRoleForMember(ctx context.Context, chatId int, userId st
 			"roles.id as id",
 			"name",
 			"is_system",
-			"can_ban_users",
+			"can_manage_members",
 			"can_edit_roles",
 			"can_delete_messages",
 			"can_get_join_code",
