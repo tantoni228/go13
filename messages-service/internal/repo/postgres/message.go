@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	// "log"
 
@@ -17,6 +18,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	// "github.com/google/uuid"
 )
+
 
 
 type MessageRepository struct {
@@ -36,11 +38,13 @@ func (s MessageRepository) SendMessage(ctx context.Context, req *api.MessageInpu
 	var chat_id models.Message
 	var result api.Message
 
+	now := time.Now()
+
 	fmt.Println(auth.UserIdFromCtx(ctx))
 
 	err := sq.Insert("messages").
 		Columns("message", "edited", "user_id", "send_timestamp", "chat_id").
-		Values(&req.Message, false, auth.UserIdFromCtx(ctx), 5, params.ChatId).
+		Values(&req.Message, false, auth.UserIdFromCtx(ctx), now.Unix(), params.ChatId).
 		Suffix("returning *").
 		PlaceholderFormat(sq.Dollar).
 		RunWith(s.db.DB.DB).
@@ -77,6 +81,9 @@ func (s MessageRepository) GetMessageById(ctx context.Context, params api.GetMes
 		Scan(&result.ID, &result.SenderID, &result.Message, &result.Edited, &result.SendTimestamp)
 	
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
 		return nil, fmt.Errorf("repository.GetMessageById: %w", err)
 	}
 

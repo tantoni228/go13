@@ -6,6 +6,7 @@ import (
 	api "go13/pkg/ogen/messages-service"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type userIdCtxKey struct{}
@@ -24,15 +25,20 @@ func NewSecurityHandler() *SecurityHandler {
 }
 
 func (s *SecurityHandler) HandleBearerAuth(ctx context.Context, _ api.OperationName, auth api.BearerAuth) (context.Context, error) {
-	var claims jwtClaims
-	_, err := jwt.ParseWithClaims(auth.GetToken(), &claims, nil)
-	if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
-		return ctx, err
-	}
+    var claims jwtClaims
+    _, err := jwt.ParseWithClaims(auth.GetToken(), &claims, nil)
+    if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
+        return ctx, err
+    }
 
-	userId := claims.UserId
-	ctx = context.WithValue(ctx, userIdCtxKey{}, userId)
-	return ctx, nil
+    // Проверка, является ли UserId корректным UUID
+    userId := claims.UserId
+    if _, err := uuid.Parse(userId); err != nil {
+        return ctx, errors.New("invalid UserId format; expected a valid UUID")
+    }
+
+    ctx = context.WithValue(ctx, userIdCtxKey{}, userId)
+    return ctx, nil
 }
 
 // UserIdFromCtx returns userId associated with context.
