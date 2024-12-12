@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
-	api "go13/pkg/ogen/chats-service"
+	api "go13/pkg/ogen/messages-service"
 
 	"github.com/golang-jwt/jwt/v5"
 )

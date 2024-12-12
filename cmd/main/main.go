@@ -1,84 +1,73 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"log"
+	"time"
 
-	"github.com/go-faster/errors"
-	"github.com/go-faster/jx"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/ogen-go/ogen/ogenregex"
-	"github.com/ogen-go/ogen/validate"
 )
 
+type userIdCtxKey struct{}
 
-type UserId string
-
-func (s UserId) Encode(e *jx.Encoder) {
-	unwrapped := string(s)
-
-	e.Str(unwrapped)
-}
-
-// Decode decodes UserId from json.
-func (s *UserId) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode UserId to nil")
-	}
-	var unwrapped string
-	if err := func() error {
-		v, err := d.Str()
-		unwrapped = string(v)
-		if err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = UserId(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s UserId) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *UserId) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-
-var regexMap = map[string]ogenregex.Regexp{
-	"uuid": ogenregex.MustCompile("uuid"),
-}
-
-func (s UserId) Validate() error {
-    alias := (string)(s)
-    if err := (validate.String{
-        MinLength:    0,
-        MinLengthSet: false,
-        MaxLength:    0,
-        MaxLengthSet: false,
-        Email:        false,
-        Hostname:     false,
-        Regex:        regexMap["uuid"],
-    }).Validate(string(alias)); err != nil {
-        return errors.Wrap(err, "string")
-    }
-    return nil
-}
-
-func GenerateRandomUUID() (string) {
-	id := uuid.New()
-    return id.String()
+type jwtClaims struct {
+    jwt.RegisteredClaims
+    UserId string `json:"user_id"` // Здесь должно быть "user_id", а не "uuid"
 }
 
 func main() {
-    uuid := UserId(GenerateRandomUUID())
-    fmt.Println(uuid.Validate().Error())
+    ctx := context.Background()
+
+    // Пример UUID (можно заменить на входной параметр)
+    uuid := uuid.New()
+
+    // Генерация JWT
+    token := generateJWT(uuid.String())
+
+    fmt.Println("Сгенерированный JWT:", token)
+
+    var claims jwtClaims
+    _, err := jwt.ParseWithClaims(token, &claims, nil)
+    if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
+        fmt.Println(err)
+    }
+
+    userId := claims.UserId
+
+    ctx = context.WithValue(ctx, userIdCtxKey{}, userId)
+
+    fmt.Println(UserIdFromCtx(ctx)) // Теперь будет выведен правильный UUID
+}
+
+// UserIdFromCtx returns userId associated with context.
+// If no userId is associated, the empty string is returned.
+func UserIdFromCtx(ctx context.Context) string {
+    return ctx.Value(userIdCtxKey{}).(string)
+}
+
+// Функция для генерации JWT
+
+func generateJWT(uuid string) string {
+    // Определяем секрет для подписи токена
+    secret := []byte("my_secret_key")
+
+    // Создаем Claims (дополнительные данные для токена)
+    claims := jwt.MapClaims{
+        "user_id": uuid, // Здесь должно быть "user_id", а не "uuid"
+        "exp":     time.Now().Add(time.Hour * 1).Unix(),
+    }
+
+    // Создаем новый токен
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+    // Подписываем токен
+    signedToken, err := token.SignedString(secret)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    return signedToken
 }
