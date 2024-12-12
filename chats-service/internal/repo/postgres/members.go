@@ -45,7 +45,7 @@ func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.
 			case "23505":
 				return models.ErrUserAlreadyInChat
 			case "23503":
-				return models.ErrChatOrRoleNotFound
+				return models.ErrRoleNotFound
 			}
 		}
 		return fmt.Errorf("%s: ExecContext: %w", op, err)
