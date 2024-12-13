@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	// "go13/messages-service/internal/models"
+	"go13/messages-service/internal/models"
 	"go13/messages-service/internal/service"
 	api "go13/pkg/ogen/messages-service"
 
@@ -31,6 +32,9 @@ func NewMessagesHandler(srv *service.MessagesService) *MessagesHandler {
 func (m *MessagesHandler) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (api.DeleteMessageRes, error) {
 	err := m.service.DeleteMessage(ctx, api.DeleteMessageParams{MessageId: params.MessageId, ChatId: params.ChatId})
 	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.DeleteMessageNotFound{}, nil
+		}
 		return nil, fmt.Errorf("DeleteMessage: %w", err)
 	}
 
@@ -43,16 +47,12 @@ func (m *MessagesHandler) DeleteMessage(ctx context.Context, params api.DeleteMe
 //
 // GET /messages/{messageId}
 
-type CustomError struct {
-	StatusCode int
-	Message    string
-}
 
 func (m *MessagesHandler) GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error) {
 	resp, err := m.service.GetMessageById(ctx, api.GetMessageByIdParams{MessageId: params.MessageId, ChatId: params.ChatId})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return &api.GetMessageByIdNotFound{}, nil
 		}
 		return nil, fmt.Errorf("GetMessageById: %w", err)
 	}
@@ -68,6 +68,9 @@ func (m *MessagesHandler) GetMessageById(ctx context.Context, params api.GetMess
 func (m *MessagesHandler) ListMessages(ctx context.Context, params api.ListMessagesParams) (api.ListMessagesRes, error) {
 	messages, err := m.service.ListMessages(ctx, api.ListMessagesParams{ChatId: params.ChatId, Limit: params.Limit, Offset: params.Offset})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return &api.ChatNotFoundResponse{}, nil
+		}
 		return nil, fmt.Errorf("ListMessages: %w", err)
 	}
 
@@ -121,6 +124,9 @@ func (m *MessagesHandler) SendMessage(ctx context.Context, req *api.MessageInput
 func (m *MessagesHandler) UpdateMessage(ctx context.Context, req *api.MessageInput, params api.UpdateMessageParams) (api.UpdateMessageRes, error) {
 	resp, err := m.service.UpdateMessage(ctx, &api.MessageInput{Message: req.Message}, api.UpdateMessageParams{MessageId: params.MessageId, ChatId: params.ChatId})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return &api.UpdateMessageNotFound{}, nil
+		}
 		return nil, fmt.Errorf("UpdateMessage: %w", err)
 	}
 

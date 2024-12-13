@@ -34,7 +34,7 @@ func (s *SecurityHandler) HandleBearerAuth(ctx context.Context, _ api.OperationN
     // Проверка, является ли UserId корректным UUID
     userId := claims.UserId
     if _, err := uuid.Parse(userId); err != nil {
-        return ctx, errors.New("invalid UserId format; expected a valid UUID")
+        return ctx, err
     }
 
     ctx = context.WithValue(ctx, userIdCtxKey{}, userId)

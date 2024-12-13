@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -56,16 +55,22 @@ func (s MessageRepository) SendMessage(ctx context.Context, req *api.MessageInpu
 	return &result, nil
 }
 
-func (s MessageRepository) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) (error) {
-	deleteBuilder := sq.Delete("messages").
-		Where(sq.Eq{"id": params.MessageId, "chat_id": params.ChatId}).
-		PlaceholderFormat(sq.Dollar)
-	
-	_, err := deleteBuilder.RunWith(s.db.DB.DB).Exec()
-	if err != nil {
-		return fmt.Errorf("repository.DeleteMessage")
-	}
-	return  nil
+func (s MessageRepository) DeleteMessage(ctx context.Context, params api.DeleteMessageParams) error {
+    deleteBuilder := sq.Delete("messages").
+        Where(sq.Eq{"id": params.MessageId, "chat_id": params.ChatId}).
+        PlaceholderFormat(sq.Dollar)
+
+    res, err := deleteBuilder.RunWith(s.db.DB.DB).Exec()
+    if err != nil {
+        return fmt.Errorf("repository.DeleteMessage: %w", err)
+    }
+
+    rowsAffected, _ := res.RowsAffected()
+    if rowsAffected == 0 {
+        return models.ErrChatNotFound
+    }
+
+    return nil
 }
 
 func (s MessageRepository) GetMessageById(ctx context.Context, params api.GetMessageByIdParams) (api.GetMessageByIdRes, error) {
@@ -142,9 +147,9 @@ func (s MessageRepository) UpdateMessage(ctx context.Context, req *api.MessageIn
         Scan(&result.ID, &result.SenderID, &chat_id, &result.Message, &result.Edited, &result.SendTimestamp)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) { // Проверка на отсутствие записей
-            return nil, fmt.Errorf("repository.UpdateMessage: no row found with ID %s", params.MessageId)
-        }
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
         return nil, fmt.Errorf("repository.UpdateMessage: %w", err)
     }
 

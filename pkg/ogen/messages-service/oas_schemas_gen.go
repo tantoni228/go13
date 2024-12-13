@@ -21,6 +21,11 @@ type ChatId int
 // Ref: #/components/responses/chatNotFoundResponse
 type ChatNotFoundResponse struct{}
 
+// getMessageByIdRes implements GetMessageByIdRes.
+func (c *ChatNotFoundResponse) getMessageByIdRes() {
+	panic("unimplemented")
+}
+
 func (*ChatNotFoundResponse) listMessagesRes() {}
 func (*ChatNotFoundResponse) sendMessageRes()  {}
 
