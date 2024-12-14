@@ -95,3 +95,27 @@ func (mr *MembersRepo) UnsetRole(ctx context.Context, chatId int, oldRoleId, new
 
 	return nil
 }
+
+func (mr *MembersRepo) CheckMemberIsBanned(ctx context.Context, chatId int, userId string) (bool, error) {
+	op := "MembersRepo.CheckUserIsBanned"
+
+	query, args, err := mr.sq.
+		Select("count(*)").
+		From("banned_members").
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"user_id": userId},
+		}).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var count int
+	err = mr.getter.DefaultTrOrDB(ctx, mr.db).QueryRowxContext(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("%s: QueryContext: %w", op, err)
+	}
+
+	return count != 0, nil
+}
