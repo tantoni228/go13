@@ -19,19 +19,28 @@ type AccessService struct {
 	messagesServer *mapi.Server
 	chatsRepo      ChatsRepo
 	rolesRepo      RolesRepo
+	messagesRepo   MessagesRepo
 }
 
-func NewAccessService(chatsRepo ChatsRepo, rolesRepo RolesRepo) *AccessService {
+func NewAccessService(
+	chatsRepo ChatsRepo,
+	rolesRepo RolesRepo,
+	messagesRepo MessagesRepo,
+) *AccessService {
 	return &AccessService{
 		chatsServer:    &chapi.Server{},
 		messagesServer: &mapi.Server{},
 		chatsRepo:      chatsRepo,
 		rolesRepo:      rolesRepo,
+		messagesRepo:   messagesRepo,
 	}
 }
 
 func (as *AccessService) CheckAccess(ctx context.Context, userId string, method string, u *url.URL) error {
+	op := "AccessService.CheckAccess"
+
 	if route, ok := as.chatsServer.FindPath(method, u); ok {
+		logger.FromCtx(ctx).Debug(op, zap.String("operation", route.OperationID()))
 		switch route.Name() {
 		case chapi.BanUserOperation:
 			return as.CheckBanUser(ctx, userId, route, u)
@@ -93,6 +102,7 @@ func (as *AccessService) CheckAccess(ctx context.Context, userId string, method 
 		}
 	}
 	if route, ok := as.messagesServer.FindPath(method, u); ok {
+		logger.FromCtx(ctx).Debug(op, zap.String("operation", route.OperationID()))
 		switch route.Name() {
 		case mapi.ListMessagesOperation:
 			return as.CheckListMessages(ctx, userId, route, u)
@@ -112,7 +122,6 @@ func (as *AccessService) CheckAccess(ctx context.Context, userId string, method 
 func (as *AccessService) CheckListMessages(ctx context.Context, userId string, route mapi.Route, u *url.URL) error {
 	op := "AccessService.CheckListMessages"
 
-	logger.FromCtx(ctx).Debug(op, zap.String("operation", route.OperationID()))
 	chatId, err := getChatIdFromQuery(u)
 	if err != nil {
 		return models.ErrInvalidRouteParams
@@ -128,29 +137,138 @@ func (as *AccessService) CheckListMessages(ctx context.Context, userId string, r
 		if errors.Is(err, models.ErrMemberNotFound) {
 			return models.ErrAccessForbidden
 		}
-		return err
+		return fmt.Errorf("%s: get role for member: %w", op, err)
 	}
 
 	return nil
 }
 
 func (as *AccessService) CheckSendMessage(ctx context.Context, userId string, route mapi.Route, u *url.URL) error {
-	logger.FromCtx(ctx).Info("check", zap.String("operation", route.OperationID()))
+	op := "AccessService.ChackSendMessage"
+
+	chatId, err := getChatIdFromQuery(u)
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = as.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return fmt.Errorf("%s: get chat by id: %w", op, err)
+	}
+
+	_, err = as.rolesRepo.GetRoleForMember(ctx, chatId, userId)
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return models.ErrAccessForbidden
+		}
+		return fmt.Errorf("%s: get role for member: %w", op, err)
+	}
+
 	return nil
 }
 
 func (as *AccessService) CheckGetMessageById(ctx context.Context, userId string, route mapi.Route, u *url.URL) error {
-	logger.FromCtx(ctx).Info("check", zap.String("operation", route.OperationID()))
+	op := "AccessService.CheckGetMessageById"
+
+	chatId, err := getChatIdFromQuery(u)
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = getMessageIdFromArgs(route.Args())
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = as.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return fmt.Errorf("%s: get chat by id: %w", op, err)
+	}
+
+	_, err = as.rolesRepo.GetRoleForMember(ctx, chatId, userId)
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return models.ErrAccessForbidden
+		}
+		return fmt.Errorf("%s: get role for member: %w", op, err)
+	}
+
 	return nil
 }
 
 func (as *AccessService) CheckUpdateMessage(ctx context.Context, userId string, route mapi.Route, u *url.URL) error {
-	logger.FromCtx(ctx).Info("check", zap.String("operation", route.OperationID()))
+	op := "AccessService.CheckUpdateMessage"
+
+	chatId, err := getChatIdFromQuery(u)
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	messageId, err := getMessageIdFromArgs(route.Args())
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = as.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return fmt.Errorf("%s: get chat by id: %w", op, err)
+	}
+
+	_, err = as.rolesRepo.GetRoleForMember(ctx, chatId, userId)
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return models.ErrAccessForbidden
+		}
+		return fmt.Errorf("%s: get role for member: %w", op, err)
+	}
+
+	message, err := as.messagesRepo.GetMessageById(ctx, chatId, messageId)
+	if err != nil {
+		return fmt.Errorf("%s: get message by id: %w", op, err)
+	}
+
+	if message.SenderId != userId {
+		return models.ErrAccessForbidden
+	}
+
 	return nil
 }
 
 func (as *AccessService) CheckDeleteMessage(ctx context.Context, userId string, route mapi.Route, u *url.URL) error {
-	logger.FromCtx(ctx).Info("check", zap.String("operation", route.OperationID()))
+	op := "AccessService.CheckDeketeMessage"
+
+	chatId, err := getChatIdFromQuery(u)
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	messageId, err := getMessageIdFromArgs(route.Args())
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = as.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return fmt.Errorf("%s: get chat by id: %w", op, err)
+	}
+
+	role, err := as.rolesRepo.GetRoleForMember(ctx, chatId, userId)
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return models.ErrAccessForbidden
+		}
+		return fmt.Errorf("%s: get role for member: %w", op, err)
+	}
+
+	message, err := as.messagesRepo.GetMessageById(ctx, chatId, messageId)
+	if err != nil {
+		return fmt.Errorf("%s: get message by id: %w", op, err)
+	}
+
+	if message.SenderId != userId && !role.CanDeleteMessages {
+		return models.ErrAccessForbidden
+	}
+
 	return nil
 }
 

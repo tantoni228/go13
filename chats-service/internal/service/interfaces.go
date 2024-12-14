@@ -27,3 +27,7 @@ type MembersRepo interface {
 	DeleteMembersForChat(ctx context.Context, chatId int) error
 	UnsetRole(ctx context.Context, chatId int, oldRoleId, newRoleId int) error
 }
+
+type MessagesRepo interface {
+	GetMessageById(ctx context.Context, chatId int, messageId int) (models.Message, error)
+}
