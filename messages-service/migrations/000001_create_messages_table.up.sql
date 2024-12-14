@@ -4,6 +4,5 @@ CREATE TABLE IF NOT EXISTS messages (
 	chat_id INTEGER NOT NULL,
 	message TEXT NOT NULL,
 	edited BOOLEAN DEFAULT false,
-    send_timestamp INTEGER NOT NULL,
-	FOREIGN KEY (chat_id) REFERENCES chats (id)
+    send_timestamp INTEGER NOT NULL
 );
