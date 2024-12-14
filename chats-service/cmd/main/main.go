@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"go13/chats-service/internal/config"
+	"go13/chats-service/internal/repo/messages"
 	pgrepo "go13/chats-service/internal/repo/postgres"
 	"go13/chats-service/internal/service"
 	"go13/chats-service/internal/transport/rest"
@@ -60,10 +61,14 @@ func main() {
 	rolesRepo := pgrepo.NewRolesRepo(pg)
 	chatsRepo := pgrepo.NewChatsRepo(pg)
 	membersRepo := pgrepo.NewMembersRepo(pg)
+	messagesRepo, err := messages.NewMessagesRepo(cfg.MessagesCfg)
+	if err != nil {
+		l.Fatal("messages.NewMessagesRepo", zap.Error(err))
+	}
 
 	chatsService := service.NewChatsService(chatsRepo, rolesRepo, membersRepo, trManager)
 	rolesService := service.NewRolesService(rolesRepo, membersRepo, trManager)
-	accessService := service.NewAccessService(chatsRepo, rolesRepo)
+	accessService := service.NewAccessService(chatsRepo, rolesRepo, messagesRepo)
 
 	chatsHandler := handlers.NewChatsHandler(chatsService)
 	rolesHandler := handlers.NewRolesHandler(rolesService, accessService)

@@ -10,3 +10,7 @@ postgres:
   max_idle_conns: 5
   conn_max_lifetime: 3m
   conn_max_idle_time: 1m
+messages:
+  host: localhost
+  port: 8081
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJ1c2VyX2lkIjoiYzk0NmUxYTAtZWVjZi00M2M0LTg1YWYtNjU4ZDcwZGNmY2RkIn0.vO3562qRmyc43RoGm-2YaUJ-nqYgHH44B0nkZTq1cTw
