@@ -9,5 +9,5 @@ type User struct {
 }
 
 type Users struct {
-	Users User[]
+	Users []User
 }

@@ -16,15 +16,15 @@ import (
 
 type AuthRepo interface {
 	CheckToken(ctx context.Context) (api.CheckTokenRes, error)
-	SignIn(ctx context.Context, req *SignInReq) (api.SignInRes, error)
-	SignUp(ctx context.Context, req *SignUpReq) (api.SignUpRes, error) //Update Bio забыл
+	SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error)
+	SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) //Update Bio забыл
   }
   
   type UsersRepo interface {
-	ChangePassword(ctx context.Context, req *ChangePasswordReq) (api.ChangePasswordRes, error)
+	ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
 	GetMe(ctx context.Context) (api.GetMeRes, error)
-	UpdateMe(ctx context.Context, req *UserInput) (ape.UpdateMeRes, error)
-	GetUserById(ctx context.Context, params GetUserByIdParams) (api.GetUserByIdRes, error)
+	UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error)
+	GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error)
   }
   
   type UserService struct {
@@ -41,7 +41,7 @@ func NewUserHandler(srv *service.UserService) *UserHandler {
 	return &UserHandler{service: srv}
   }
   
-  func (uh *UserHandler) SignUp(ctx context.Context, req *SignUpReq) (api.SignUpRes, error) {
+  func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
 	UserInfo := models.User{
 	  Username: req.GetUsername(),
 	  Email:    req.GetEmail(),
@@ -58,10 +58,10 @@ func NewUserHandler(srv *service.UserService) *UserHandler {
 	return &api.SignUpNoContent{}, nil
   }
   
-  func (uh *UserHandler) SignIn(ctx context.Context, req *SignInReq) (api.SignInRes, error) {
+  func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
 	LogInInfo := models.User{
-	  Email:    req.GetEmail(),
-	  Password: req.GetPassword(),
+	  Email:    string(req.Email),
+	  Password: string(req.Password),
 	}
 	user, err := uh.service.SignIn(ctx, req)
 	if err != nil {

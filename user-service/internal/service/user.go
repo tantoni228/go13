@@ -2,20 +2,20 @@ package service
 
 import (
   "context"
-  api "go13/pkg/ogen/user-service"
+  api "go13/pkg/ogen/users-service"
 )
 
 type AuthRepo interface {
   CheckToken(ctx context.Context) (api.CheckTokenRes, error)
-  SignIn(ctx context.Context, req *SignInReq) (api.SignInRes, error)
-  SignUp(ctx context.Context, req *SignUpReq) (api.SignUpRes, error)
+  SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error)
+  SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error)
 }
 
 type UsersRepo interface {
-  ChangePassword(ctx context.Context, req *ChangePasswordReq) (api.ChangePasswordRes, error)
+  ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
   GetMe(ctx context.Context) (api.GetMeRes, error)
-  UpdateMe(ctx context.Context, req *UserInput) (UpdateMeRes, error)
-  GetUserById(ctx context.Context, params GetUserByIdParams) (api.GetUserByIdRes, error)
+  UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error)
+  GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error)
 }
 
 type UserService struct {
@@ -31,15 +31,15 @@ func (s *UserService) CheckToken(ctx context.Context) (api.CheckTokenRes, error)
   return s.AuthRepo.CheckToken(ctx)
 }
 
-func (s *UserService) SignIn(ctx context.Context, req *SignInReq) (api.SignInRes, error) {
+func (s *UserService) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
   return s.AuthRepo.SignIn(ctx, req)
 }
 
-func (s *UserService) SignUp(ctx context.Context, req *SignUpReq) (api.SignUpRes, error) {
+func (s *UserService) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
   return s.AuthRepo.SignUp(ctx, req)
 }
 
-func (s *UserService) ChangePassword(ctx context.Context, req *ChangePasswordReq) (api.ChangePasswordRes, error) {
+func (s *UserService) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
   return s.UserRepo.ChangePassword(ctx, req)
 }
 
@@ -47,6 +47,6 @@ func (s *UserService) GetMe(ctx context.Context) (api.GetMeRes, error) {
   return s.UserRepo.GetMe(ctx)
 }
 
-func (s *UserService) GetUserById(ctx context.Context, params GetUserByIdParams) (api.GetUserByIdRes, error) {
+func (s *UserService) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
   return s.UserRepo.GetUserById(ctx, params)
 }
