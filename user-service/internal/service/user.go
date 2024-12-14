@@ -14,6 +14,7 @@ type AuthRepo interface {
 type UsersRepo interface {
   ChangePassword(ctx context.Context, req *ChangePasswordReq) (api.ChangePasswordRes, error)
   GetMe(ctx context.Context) (api.GetMeRes, error)
+  UpdateMe(ctx context.Context, req *UserInput) (UpdateMeRes, error)
   GetUserById(ctx context.Context, params GetUserByIdParams) (api.GetUserByIdRes, error)
 }
 
