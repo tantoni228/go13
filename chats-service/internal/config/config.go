@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Port        int             `yaml:"server_port" env:"SERVER_PORT" env-default:"8080"`
-	LogLevel    string          `yaml:"log_level" env:"LOG_LEVEL" env-default:"INFO"`
-	PostgresCfg postgres.Config `yaml:"postgres"`
-	MessagesCfg messages.Config `yaml:"messages"`
+	Port           int             `yaml:"server_port" env:"SERVER_PORT" env-default:"8080"`
+	LogLevel       string          `yaml:"log_level" env:"LOG_LEVEL" env-default:"INFO"`
+	JoinCodeSecret string          `yaml:"join_code_secret" env:"JOIN_CODE_SECRET"`
+	PostgresCfg    postgres.Config `yaml:"postgres"`
+	MessagesCfg    messages.Config `yaml:"messages"`
 }
 
 func Get(configPath string) (Config, error) {

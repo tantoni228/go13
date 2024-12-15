@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  chats-service:
+    build:
+      context: ..
+      dockerfile: ./api/chats-service/docker/Dockerfile.chats-service
+    environment:
+      - SERVER_PORT=9090
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=chats
+      - POSTGRES_USER=user-service
+      - POSTGRES_PASSWORD=secret
+      - MESSAGES_HOST=messages-mock
+      - MESSAGES_PORT=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      messages-mock:
+        condition: service_started
+    ports:
+      - 9090:9090
+
+  messages-mock:
+    build:
+      context: ..
+      dockerfile: chats-service/cmd/messages-service-mock/Dockerfile
+    environment:
+      - CHAT_ID=12
+      - MESSAGE_ID=42
+      - SENDER_ID=36d9af90-5bf4-44e8-a4c4-c783dd334348
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    environment:
+      - SWAGGER_JSON=/swagger/swagger.yml
+    volumes:
+      - ../api:/swagger
+    ports:
+      - 5000:8080
+
+  postgres:
+    container_name: postgres
+    image: postgres:16.2-alpine
+    environment:
+      - POSTGRES_DB=chats
+      - POSTGRES_USER=user_service
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - chats_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -d chats -U user_service
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+
+  nginx:
+    image: nginx:1.27.2-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - user-serivce
+    ports:
+      - 8080:8080
+
+  migrate:
+    image: migrate/migrate
+    container_name: migrate
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: >
+      sh -c 'migrate -path /migrations \
+        -database "postgres://chats_service:secret@postgres:5432/users?sslmode=disable" up
+      '
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  chats_postgres_data:

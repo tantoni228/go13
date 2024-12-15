@@ -10,6 +10,8 @@ var (
 	ErrAccessForbidden    = errors.New("access forbidden")
 	ErrRoleAlreadyExists  = errors.New("role already exists")
 	ErrUserAlreadyInChat  = errors.New("user already in chat")
+	ErrInvalidJoinCode    = errors.New("invalid join code")
+	ErrUserIsBanned       = errors.New("user is banned")
 	ErrEndpointNotFound   = errors.New("endpoint not found")
 	ErrInvalidRouteParams = errors.New("invalid route params")
 )
