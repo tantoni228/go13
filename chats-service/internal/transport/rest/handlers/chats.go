@@ -14,6 +14,9 @@ import (
 type ChatsService interface {
 	CreateChat(ctx context.Context, creatorId string, chat models.Chat) (models.Chat, error)
 	DeleteChat(ctx context.Context, chatId int) error
+	GetJoinCode(ctx context.Context, chatId int) (string, error)
+	JoinChat(ctx context.Context, userId string, joinCode string) error
+	LeaveChat(ctx context.Context, chatId int, userId string) error
 }
 
 type ChatsHandler struct {
@@ -106,7 +109,12 @@ func (ch *ChatsHandler) GetChatById(ctx context.Context, params api.GetChatByIdP
 //
 // GET /chats/{chatId}/join-code
 func (ch *ChatsHandler) GetJoinCode(ctx context.Context, params api.GetJoinCodeParams) (api.GetJoinCodeRes, error) {
-	return &api.JoinCodeResponse{}, nil
+	joinCode, err := ch.chatsService.GetJoinCode(ctx, int(params.ChatId))
+	if err != nil {
+		logger.FromCtx(ctx).Error("get join code", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+	return &api.JoinCodeResponse{JoinCode: joinCode}, nil
 }
 
 // JoinChat implements joinChat operation.
@@ -115,6 +123,26 @@ func (ch *ChatsHandler) GetJoinCode(ctx context.Context, params api.GetJoinCodeP
 //
 // POST /chats/join
 func (ch *ChatsHandler) JoinChat(ctx context.Context, req *api.JoinChatReq) (api.JoinChatRes, error) {
+	err := ch.chatsService.JoinChat(ctx, auth.UserIdFromCtx(ctx), req.GetJoinCode())
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidJoinCode) {
+			return &api.InvalidInputResponse{
+				Message: "invalid join code",
+			}, nil
+		}
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		if errors.Is(err, models.ErrUserIsBanned) {
+			return &api.UnauthorizedResponse{}, nil
+		}
+		if errors.Is(err, models.ErrUserAlreadyInChat) {
+			return &api.JoinChatConflict{}, nil
+		}
+
+		logger.FromCtx(ctx).Error("join chat", zap.Error(err))
+	}
+
 	return &api.JoinChatNoContent{}, nil
 }
 
@@ -124,6 +152,14 @@ func (ch *ChatsHandler) JoinChat(ctx context.Context, req *api.JoinChatReq) (api
 //
 // POST /chats/{chatId}/leave
 func (ch *ChatsHandler) LeaveChat(ctx context.Context, params api.LeaveChatParams) (api.LeaveChatRes, error) {
+	err := ch.chatsService.LeaveChat(ctx, int(params.ChatId), auth.UserIdFromCtx(ctx))
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		logger.FromCtx(ctx).Error("leave chat", zap.Error(err))
+	}
+
 	return &api.LeaveChatNoContent{}, nil
 }
 

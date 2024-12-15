@@ -24,6 +24,7 @@ type RolesRepo interface {
 
 type MembersRepo interface {
 	AddMember(ctx context.Context, chatId int, member models.Member) error
+	DeleteMember(ctx context.Context, chatId int, userId string) error
 	DeleteMembersForChat(ctx context.Context, chatId int) error
 	UnsetRole(ctx context.Context, chatId int, oldRoleId, newRoleId int) error
 	CheckMemberIsBanned(ctx context.Context, chatid int, userId string) (bool, error)

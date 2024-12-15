@@ -45,10 +45,40 @@ func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.
 			case "23505":
 				return models.ErrUserAlreadyInChat
 			case "23503":
-				return models.ErrRoleNotFound
+				return models.ErrChatNotFound
 			}
 		}
 		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}
+
+func (mr *MembersRepo) DeleteMember(ctx context.Context, chatId int, userId string) error {
+	op := "MembersRepo.DeleteMember"
+
+	sql, args, err := mr.sq.
+		Delete("members").
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"user_id": userId},
+		}).ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	cmd, err := mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.ErrMemberNotFound
 	}
 
 	return nil

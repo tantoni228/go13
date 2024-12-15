@@ -66,7 +66,7 @@ func main() {
 		l.Fatal("messages.NewMessagesRepo", zap.Error(err))
 	}
 
-	chatsService := service.NewChatsService(chatsRepo, rolesRepo, membersRepo, trManager)
+	chatsService := service.NewChatsService(chatsRepo, rolesRepo, membersRepo, trManager, cfg.JoinCodeSecret)
 	rolesService := service.NewRolesService(rolesRepo, membersRepo, trManager)
 	accessService := service.NewAccessService(chatsRepo, rolesRepo, messagesRepo)
 
