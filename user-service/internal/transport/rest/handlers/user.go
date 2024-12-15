@@ -2,86 +2,100 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-	"fmt"
 
-	// "go13/messages-service/internal/models"
-	"go13/user-service/internal/models"
-	"go13/user-service/internal/service"
+	"go13/pkg/logger"
 	api "go13/pkg/ogen/users-service"
+	"go13/user-service/internal/models"
 
-	"github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 type AuthRepo interface {
 	CheckToken(ctx context.Context) (api.CheckTokenRes, error)
 	SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error)
-	SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) //Update Bio забыл
-  }
-  
-  type UsersRepo interface {
+	SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error)
+}
+
+type UsersRepo interface {
 	ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
 	GetMe(ctx context.Context) (api.GetMeRes, error)
 	UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error)
 	GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error)
-  }
-  
-  type UserService struct {
+}
+
+type UserService struct {
 	UserRepo UsersRepo
 	AuthRepo AuthRepo
-  }
-  
+}
 
 type UserHandler struct {
 	service UserService
 }
 
-func NewUserHandler(srv *service.UserService) *UserHandler {
+func NewUserHandler(srv UserService) *UserHandler {
 	return &UserHandler{service: srv}
-  }
-  
-  func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
+}
+
+func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
 	UserInfo := models.User{
-	  Username: req.GetUsername(),
-	  Email:    req.GetEmail(),
-	  Password: req.GetPassword(),
+		Username: req.GetUsername(),
+		Email:    models.Email(req.GetEmail()),
+		Password: models.Password(req.GetUsername()),
 	}
-	user, err := uh.service.SignUp(ctx, req)
+
+	_, err := uh.service.AuthRepo.SignUp(ctx, &api.SignUpReq{Email: api.Email(UserInfo.Email),
+		Username: string(UserInfo.Username), Password: api.Password(UserInfo.Password)})
 	if err != nil {
-	  if errors.Is(err, models.ErrEmailAlreadyExisting) || errors.Is(err, models.ErrUsernameAlreadyExisting) {
-		return &api.SignUpConflict{}, nil
-	  }
-	  logger.FromCtx(ctx).Error("signing up", zap.Error(err))
-	  return &api.InternalErrorResponse{}, nil
+		if errors.Is(err, models.ErrEmailAlreadyExisting) || errors.Is(err, models.ErrUsernameAlreadyExisting) {
+			return &api.SignUpConflict{}, nil
+		}
+		logger.FromCtx(ctx).Error("signing up", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 	return &api.SignUpNoContent{}, nil
-  }
-  
-  func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
+}
+
+func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
 	LogInInfo := models.User{
-	  Email:    string(req.Email),
-	  Password: string(req.Password),
+		Email:    models.Email(req.GetEmail()),
+		Password: models.Password(req.GetPassword()),
 	}
-	user, err := uh.service.SignIn(ctx, req)
+
+	user, err := uh.service.AuthRepo.SignIn(ctx, &api.SignInReq{Email: api.Email(LogInInfo.Email),
+		Password: api.Password(LogInInfo.Password)})
 	if err != nil {
-	  if errors.Is(err, models.ErrUsernameNotFound) || errors.Is(err, models.ErrPasswordIsIncorrect) {
-		return &api.SignInUnauthorized{}, nil
-	  }
-	  logger.FromCtx(ctx).Error("signing in", zap.Error(err))
-	  return &api.InternalErrorResponse{}, nil
+		if errors.Is(err, models.ErrUsernameNotFound) || errors.Is(err, models.ErrPasswordIsIncorrect) {
+			return &api.SignInUnauthorized{}, nil
+		}
+		logger.FromCtx(ctx).Error("signing in", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
-	return user, nil // или ваш объект SignInRes
-  }
-  
-  func (uh *UserHandler) ChangePassword(ctx context.Context, req *ChangePasswordReq) (api.ChangePasswordRes, error) {
-	resp, err := uh.service.ChangePassword(ctx, &api.ChangePasswordReq{
-	  OldPassword: req.GetOldPassword(),
-	  NewPassword: req.GetNewPassword(),
+
+	return user, nil
+}
+
+func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
+		OldPassword: req.GetOldPassword(),
+		NewPassword: req.GetNewPassword(),
 	})
 	if err != nil {
-	  logger.FromCtx(ctx).Error("changing password", zap.Error(err))
-	  return &api.InternalErrorResponse{}, nil
+		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 	return resp, nil
-  }
+}
+
+func (uh *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
+	resp, err := uh.service.UserRepo.GetUserById(ctx, params)
+	if err != nil {
+		if errors.Is(err, models.ErrIDNotFound) {
+			return &api.UserNotFoundResponse{}, nil // используем правильный тип ответа
+		}
+		logger.FromCtx(ctx).Error("getting user by id", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return resp, nil
+}
