@@ -3,6 +3,6 @@ log_level: debug
 postgres:
   host: localhost
   port: 5432
-  db: users
+  db: chats
   user: user_service
   password: secret
