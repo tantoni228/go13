@@ -180,3 +180,14 @@ func (cs *ChatsService) LeaveChat(ctx context.Context, chatId int, userId string
 
 	return nil
 }
+
+func (cs *ChatsService) SetRole(ctx context.Context, chatId int, userId string, roleId int) error {
+	op := "ChatsService.SetRole"
+
+	err := cs.membersRepo.SetRoleForMember(ctx, chatId, userId, roleId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}

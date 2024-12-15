@@ -84,6 +84,44 @@ func (mr *MembersRepo) DeleteMember(ctx context.Context, chatId int, userId stri
 	return nil
 }
 
+func (mr *MembersRepo) SetRoleForMember(ctx context.Context, chatId int, userId string, roleId int) error {
+	op := "MembersRepo.SetRoleForMember"
+
+	sql, args, err := mr.sq.
+		Update("members").
+		Set("role_id", roleId).
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"user_id": userId},
+		}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	cmd, err := mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23503":
+				return models.ErrRoleNotFound
+			}
+		}
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.ErrMemberNotFound
+	}
+
+	return nil
+}
+
 func (mr *MembersRepo) DeleteMembersForChat(ctx context.Context, chatId int) error {
 	op := "MembersRepo.DeleteMembersForChat"
 

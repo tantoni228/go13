@@ -17,6 +17,7 @@ type ChatsService interface {
 	GetJoinCode(ctx context.Context, chatId int) (string, error)
 	JoinChat(ctx context.Context, userId string, joinCode string) error
 	LeaveChat(ctx context.Context, chatId int, userId string) error
+	SetRole(ctx context.Context, chatId int, userId string, roleId int) error
 }
 
 type ChatsHandler struct {
@@ -187,6 +188,17 @@ func (ch *ChatsHandler) ListMembers(ctx context.Context, params api.ListMembersP
 //
 // POST /chats/{chatId}/members/{userId}/set-role
 func (ch *ChatsHandler) SetRole(ctx context.Context, req *api.SetRoleReq, params api.SetRoleParams) (api.SetRoleRes, error) {
+	err := ch.chatsService.SetRole(ctx, int(params.ChatId), string(params.UserId), int(req.GetRoleID()))
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return &api.SetRoleNotFound{}, nil
+		}
+		if errors.Is(err, models.ErrRoleNotFound) {
+			return &api.SetRoleNotFound{}, nil
+		}
+		logger.FromCtx(ctx).Error("set role", zap.Error(err))
+	}
+
 	return &api.SetRoleNoContent{}, nil
 }
 
