@@ -5,6 +5,7 @@ import (
 	"errors"
 	"go13/chats-service/internal/models"
 	"go13/chats-service/internal/transport/rest/auth"
+	"go13/chats-service/internal/transport/rest/mapper"
 	"go13/pkg/logger"
 	api "go13/pkg/ogen/chats-service"
 
@@ -13,7 +14,11 @@ import (
 
 type ChatsService interface {
 	CreateChat(ctx context.Context, creatorId string, chat models.Chat) (models.Chat, error)
+	GetChatById(ctx context.Context, chatId int) (models.Chat, error)
+	ListChatsForUser(ctx context.Context, userId string) ([]models.Chat, error)
+	UpdateChat(ctx context.Context, chatId int, newChar models.Chat) (models.Chat, error)
 	DeleteChat(ctx context.Context, chatId int) error
+	ListMembers(ctx context.Context, chatId int) ([]models.Member, error)
 	GetJoinCode(ctx context.Context, chatId int) (string, error)
 	JoinChat(ctx context.Context, userId string, joinCode string) error
 	LeaveChat(ctx context.Context, chatId int, userId string) error
@@ -143,7 +148,16 @@ func (ch *ChatsHandler) DeleteChat(ctx context.Context, params api.DeleteChatPar
 //
 // GET /chats/{chatId}
 func (ch *ChatsHandler) GetChatById(ctx context.Context, params api.GetChatByIdParams) (api.GetChatByIdRes, error) {
-	return &api.Chat{}, nil
+	chat, err := ch.chatsService.GetChatById(ctx, int(params.ChatId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		logger.FromCtx(ctx).Error("get chat by id", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return mapper.ModelsChatToApiChat(chat), nil
 }
 
 // GetJoinCode implements getJoinCode operation.
@@ -214,7 +228,18 @@ func (ch *ChatsHandler) LeaveChat(ctx context.Context, params api.LeaveChatParam
 //
 // GET /chats
 func (ch *ChatsHandler) ListChats(ctx context.Context) (api.ListChatsRes, error) {
-	return &api.ListChatsOKApplicationJSON{}, nil
+	chats, err := ch.chatsService.ListChatsForUser(ctx, auth.UserIdFromCtx(ctx))
+	if err != nil {
+		logger.FromCtx(ctx).Error("list chats", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	apiChats := make([]api.Chat, len(chats))
+	for i, chat := range chats {
+		apiChats[i] = *mapper.ModelsChatToApiChat(chat)
+	}
+	res := api.ListChatsOKApplicationJSON(apiChats)
+	return &res, nil
 }
 
 // ListMembers implements listMembers operation.
@@ -223,7 +248,18 @@ func (ch *ChatsHandler) ListChats(ctx context.Context) (api.ListChatsRes, error)
 //
 // GET /chats/{chatId}/members
 func (ch *ChatsHandler) ListMembers(ctx context.Context, params api.ListMembersParams) (api.ListMembersRes, error) {
-	return &api.ListMembersOKApplicationJSON{}, nil
+	members, err := ch.chatsService.ListMembers(ctx, int(params.ChatId))
+	if err != nil {
+		logger.FromCtx(ctx).Error("list members", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	apiMembers := make([]api.Member, len(members))
+	for i, member := range members {
+		apiMembers[i] = *mapper.ModelsMemberToApiMember(member)
+	}
+	resp := api.ListMembersOKApplicationJSON(apiMembers)
+	return &resp, nil
 }
 
 // SetRole implements setRole operation.
@@ -254,5 +290,14 @@ func (ch *ChatsHandler) SetRole(ctx context.Context, req *api.SetRoleReq, params
 //
 // PUT /chats/{chatId}
 func (ch *ChatsHandler) UpdateChat(ctx context.Context, req *api.ChatInput, params api.UpdateChatParams) (api.UpdateChatRes, error) {
-	return &api.Chat{}, nil
+	updatedChat, err := ch.chatsService.UpdateChat(ctx, int(params.ChatId), mapper.ApiChatInputToModelsChat(req))
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.ChatNotFoundResponse{}, nil
+		}
+		logger.FromCtx(ctx).Error("update chat", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return mapper.ModelsChatToApiChat(updatedChat), nil
 }

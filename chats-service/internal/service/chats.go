@@ -78,6 +78,39 @@ func (cs *ChatsService) CreateChat(ctx context.Context, creatorId string, chat m
 	return resChat, nil
 }
 
+func (cs *ChatsService) ListChatsForUser(ctx context.Context, userId string) ([]models.Chat, error) {
+	op := "ChatsService.ListChatsForUser"
+
+	chats, err := cs.chatsRepo.ListChatsForUser(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return chats, nil
+}
+
+func (cs *ChatsService) GetChatById(ctx context.Context, chatId int) (models.Chat, error) {
+	op := "ChatsService.GetChatById"
+
+	chat, err := cs.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return chat, nil
+}
+
+func (cs *ChatsService) UpdateChat(ctx context.Context, chatId int, newChat models.Chat) (models.Chat, error) {
+	op := "ChatsService.UpdateChat"
+
+	updatedChat, err := cs.chatsRepo.UpdateChat(ctx, chatId, newChat)
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return updatedChat, nil
+}
+
 func (cs *ChatsService) DeleteChat(ctx context.Context, chatId int) error {
 	op := "ChatsService.DeleteChat"
 
@@ -98,6 +131,17 @@ func (cs *ChatsService) DeleteChat(ctx context.Context, chatId int) error {
 	}
 
 	return nil
+}
+
+func (cs *ChatsService) ListMembers(ctx context.Context, chatId int) ([]models.Member, error) {
+	op := "ChatsService.ListMembers"
+
+	members, err := cs.membersRepo.ListMembers(ctx, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return members, nil
 }
 
 func (cs *ChatsService) GetJoinCode(ctx context.Context, chatId int) (string, error) {

@@ -54,6 +54,27 @@ func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.
 	return nil
 }
 
+func (mr *MembersRepo) ListMembers(ctx context.Context, chatId int) ([]models.Member, error) {
+	op := "MembersRepo.ListMembers"
+
+	sql, args, err := mr.sq.
+		Select("user_id", "role_id").
+		From("members").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var members []models.Member
+	err = mr.getter.DefaultTrOrDB(ctx, mr.db).SelectContext(ctx, &members, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return members, nil
+}
+
 func (mr *MembersRepo) DeleteMember(ctx context.Context, chatId int, userId string) error {
 	op := "MembersRepo.DeleteMember"
 
