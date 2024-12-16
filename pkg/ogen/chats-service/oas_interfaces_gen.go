@@ -33,6 +33,10 @@ type GetJoinCodeRes interface {
 	getJoinCodeRes()
 }
 
+type GetMyRoleRes interface {
+	getMyRoleRes()
+}
+
 type GetRoleByIdRes interface {
 	getRoleByIdRes()
 }

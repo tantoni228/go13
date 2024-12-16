@@ -349,6 +349,29 @@ paths:
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 
+  /roles/my:
+    get:
+      summary: Get my role in chat
+      operationId: getMyRole
+      x-ogen-operation-group: Roles
+      tags:
+        - roles
+      parameters:
+        - $ref: "#/components/parameters/chatIdInQuery"
+      responses:
+        "200":
+          $ref: "#/components/responses/roleResponse"
+        "400":
+          $ref: "#/components/responses/invalidInputResponse"
+        "401":
+          $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          $ref: "#/components/responses/unauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/chatNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/internalErrorResponse"
+
   /roles/check-access:
     get:
       summary: Check access to uri with method

@@ -16,6 +16,7 @@ import (
 type RolesService interface {
 	CreateRole(ctx context.Context, chatId int, role models.Role) (models.Role, error)
 	ListRoles(ctx context.Context, chatId int) ([]models.Role, error)
+	GetRoleForUser(ctx context.Context, chatId int, userId string) (models.Role, error)
 	GetRoleById(ctx context.Context, chatId int, roleId int) (models.Role, error)
 	UpdateRole(ctx context.Context, chatId int, roleId int, newRole models.Role) (models.Role, error)
 	DeleteRole(ctx context.Context, chatId int, roleId int) error
@@ -126,6 +127,21 @@ func (rh *RolesHandler) DeleteRole(ctx context.Context, params api.DeleteRolePar
 	}
 
 	return &api.DeleteRoleNoContent{}, nil
+}
+
+// GetMyRole implements getMyRole operation.
+//
+// Get my role in chat.
+//
+// GET /roles/my
+func (rh *RolesHandler) GetMyRole(ctx context.Context, params api.GetMyRoleParams) (api.GetMyRoleRes, error) {
+	role, err := rh.rolesService.GetRoleForUser(ctx, int(params.ChatId), auth.UserIdFromCtx(ctx))
+	if err != nil {
+		logger.FromCtx(ctx).Error("get my role", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	return mapper.ModelsRoleToApiRole(role), nil
 }
 
 // GetRoleById implements getRoleById operation.

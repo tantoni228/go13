@@ -118,6 +118,12 @@ type RolesHandler interface {
 	//
 	// DELETE /roles/{roleId}
 	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	// GetMyRole implements getMyRole operation.
+	//
+	// Get my role in chat.
+	//
+	// GET /roles/my
+	GetMyRole(ctx context.Context, params GetMyRoleParams) (GetMyRoleRes, error)
 	// GetRoleById implements getRoleById operation.
 	//
 	// Get role in Chat.
