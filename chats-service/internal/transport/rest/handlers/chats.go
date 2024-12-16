@@ -18,6 +18,8 @@ type ChatsService interface {
 	JoinChat(ctx context.Context, userId string, joinCode string) error
 	LeaveChat(ctx context.Context, chatId int, userId string) error
 	SetRole(ctx context.Context, chatId int, userId string, roleId int) error
+	BanUser(ctx context.Context, chatId int, userId string) error
+	UnbanUser(ctx context.Context, chatId int, userId string) error
 }
 
 type ChatsHandler struct {
@@ -36,6 +38,20 @@ func NewChatsHandler(chatsService ChatsService) *ChatsHandler {
 //
 // POST /chats/{chatId}/members/{userId}/ban
 func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (api.BanUserRes, error) {
+	err := ch.chatsService.BanUser(ctx, int(params.ChatId), string(params.UserId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.BanUserNotFound{}, nil
+		}
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return &api.BanUserNotFound{}, nil
+		}
+		if errors.Is(err, models.ErrUserAlreadyBanned) {
+			return &api.BanUserConflict{}, nil
+		}
+		logger.FromCtx(ctx).Error("ban user", zap.Error(err))
+	}
+
 	return &api.BanUserNoContent{}, nil
 }
 
@@ -45,6 +61,18 @@ func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (
 //
 // POST /chats/{chatId}/members/{userId}/unban
 func (ch *ChatsHandler) UnbanUser(ctx context.Context, params api.UnbanUserParams) (api.UnbanUserRes, error) {
+	err := ch.chatsService.UnbanUser(ctx, int(params.ChatId), string(params.UserId))
+	if err != nil {
+		if errors.Is(err, models.ErrChatNotFound) {
+			return &api.UnbanUserNotFound{}, nil
+		}
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return &api.UnbanUserConflict{}, nil
+		}
+
+		logger.FromCtx(ctx).Error("unban user", zap.Error(err))
+	}
+
 	return &api.UnbanUserNoContent{}, nil
 }
 

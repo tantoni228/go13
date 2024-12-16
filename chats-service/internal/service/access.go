@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 	"go13/pkg/logger"
 	chapi "go13/pkg/ogen/chats-service"
 	mapi "go13/pkg/ogen/messages-service"
@@ -17,15 +18,15 @@ import (
 type AccessService struct {
 	chatsServer    *chapi.Server
 	messagesServer *mapi.Server
-	chatsRepo      ChatsRepo
-	rolesRepo      RolesRepo
-	messagesRepo   MessagesRepo
+	chatsRepo      repo.ChatsRepo
+	rolesRepo      repo.RolesRepo
+	messagesRepo   repo.MessagesRepo
 }
 
 func NewAccessService(
-	chatsRepo ChatsRepo,
-	rolesRepo RolesRepo,
-	messagesRepo MessagesRepo,
+	chatsRepo repo.ChatsRepo,
+	rolesRepo repo.RolesRepo,
+	messagesRepo repo.MessagesRepo,
 ) *AccessService {
 	return &AccessService{
 		chatsServer:    &chapi.Server{},

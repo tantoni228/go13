@@ -4,19 +4,20 @@ import (
 	"context"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 )
 
 type RolesService struct {
-	rolesRepo   RolesRepo
-	membersRepo MembersRepo
+	rolesRepo   repo.RolesRepo
+	membersRepo repo.MembersRepo
 	trManager   trm.Manager
 }
 
 func NewRolesService(
-	rolesRepo RolesRepo,
-	membersRepo MembersRepo,
+	rolesRepo repo.RolesRepo,
+	membersRepo repo.MembersRepo,
 	trManager trm.Manager,
 ) *RolesService {
 	return &RolesService{

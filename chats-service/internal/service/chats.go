@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,17 +16,17 @@ var (
 )
 
 type ChatsService struct {
-	chatsRepo      ChatsRepo
-	rolesRepo      RolesRepo
-	membersRepo    MembersRepo
+	chatsRepo      repo.ChatsRepo
+	rolesRepo      repo.RolesRepo
+	membersRepo    repo.MembersRepo
 	joinCodeSecret string
 	trManager      trm.Manager
 }
 
 func NewChatsService(
-	chatsRepo ChatsRepo,
-	rolesRepo RolesRepo,
-	membersRepo MembersRepo,
+	chatsRepo repo.ChatsRepo,
+	rolesRepo repo.RolesRepo,
+	membersRepo repo.MembersRepo,
 	trManager trm.Manager,
 	joinCodeSecret string,
 ) *ChatsService {
@@ -187,6 +188,51 @@ func (cs *ChatsService) SetRole(ctx context.Context, chatId int, userId string, 
 	err := cs.membersRepo.SetRoleForMember(ctx, chatId, userId, roleId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (cs *ChatsService) BanUser(ctx context.Context, chatId int, userId string) error {
+	op := "ChatsService.BanUser"
+
+	err := cs.trManager.Do(ctx, func(ctx context.Context) error {
+		if err := cs.membersRepo.AddMemberToBanned(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("add member to banned: %w", err)
+		}
+		if err := cs.membersRepo.DeleteMember(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("delete member: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%s: trmanager.Do: %w", op, err)
+	}
+
+	return nil
+}
+
+func (cs *ChatsService) UnbanUser(ctx context.Context, chatId int, userId string) error {
+	op := "ChatsService.UnbanUser"
+
+	err := cs.trManager.Do(ctx, func(ctx context.Context) error {
+		if err := cs.membersRepo.DeleteMemberFromBanned(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("delete member from banned: %w", err)
+		}
+		roleId, err := cs.rolesRepo.GetMemberRoleId(ctx, chatId)
+		if err != nil {
+			return fmt.Errorf("get member role id: %w", err)
+		}
+		if err := cs.membersRepo.AddMember(ctx, chatId, models.Member{
+			UserId: userId,
+			RoleId: roleId,
+		}); err != nil {
+			return fmt.Errorf("add member: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%s: trmanager.Do: %w", op, err)
 	}
 
 	return nil
