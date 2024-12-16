@@ -168,5 +168,29 @@ v user-service
   v main
    main.go
  v configs
+  example.yml
  v internal
+  v config
+   config.go
+  v models
+   errors.go
+   user.go
+  v repo
+   v postgres
+    user.go
+  v service
+   user.go
+  v transport
+   v rest
+    v auth
+     auth.go
+    v handlers
+     user.go
+    v mapper
+   server.go
  v migrations
+ docker-compose.yml
+.ogen.yml
+generate.go
+go.mod
+go.sum
