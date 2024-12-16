@@ -246,3 +246,24 @@ func (mr *MembersRepo) DeleteMemberFromBanned(ctx context.Context, chatId int, u
 
 	return nil
 }
+
+func (mr *MembersRepo) ListBannedMembers(ctx context.Context, chatId int) ([]string, error) {
+	op := "MembersRepo.ListbannedMembers"
+
+	sql, args, err := mr.sq.
+		Select("user_id").
+		From("banned_members").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var bannedmembers []string
+	err = mr.getter.DefaultTrOrDB(ctx, mr.db).SelectContext(ctx, &bannedmembers, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return bannedmembers, nil
+}

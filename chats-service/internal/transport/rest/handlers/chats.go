@@ -20,6 +20,7 @@ type ChatsService interface {
 	SetRole(ctx context.Context, chatId int, userId string, roleId int) error
 	BanUser(ctx context.Context, chatId int, userId string) error
 	UnbanUser(ctx context.Context, chatId int, userId string) error
+	ListBannedMembers(ctx context.Context, chatId int) ([]string, error)
 }
 
 type ChatsHandler struct {
@@ -50,6 +51,7 @@ func (ch *ChatsHandler) BanUser(ctx context.Context, params api.BanUserParams) (
 			return &api.BanUserConflict{}, nil
 		}
 		logger.FromCtx(ctx).Error("ban user", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 
 	return &api.BanUserNoContent{}, nil
@@ -71,6 +73,7 @@ func (ch *ChatsHandler) UnbanUser(ctx context.Context, params api.UnbanUserParam
 		}
 
 		logger.FromCtx(ctx).Error("unban user", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 
 	return &api.UnbanUserNoContent{}, nil
@@ -82,7 +85,18 @@ func (ch *ChatsHandler) UnbanUser(ctx context.Context, params api.UnbanUserParam
 //
 // GET /chats/{chatId}/members/banned
 func (ch *ChatsHandler) ListBannedUsers(ctx context.Context, params api.ListBannedUsersParams) (api.ListBannedUsersRes, error) {
-	return &api.ListBannedUsersOKApplicationJSON{}, nil
+	bannedMembers, err := ch.chatsService.ListBannedMembers(ctx, int(params.ChatId))
+	if err != nil {
+		logger.FromCtx(ctx).Error("list banned members", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+
+	apiBannedMember := make([]api.BannedMembersResponseItem, len(bannedMembers))
+	for i, memberId := range bannedMembers {
+		apiBannedMember[i] = api.BannedMembersResponseItem{UserID: api.UserId(memberId)}
+	}
+	resp := api.ListBannedUsersOKApplicationJSON(apiBannedMember)
+	return &resp, err
 }
 
 // CreateChat implements createChat operation.
@@ -170,6 +184,7 @@ func (ch *ChatsHandler) JoinChat(ctx context.Context, req *api.JoinChatReq) (api
 		}
 
 		logger.FromCtx(ctx).Error("join chat", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 
 	return &api.JoinChatNoContent{}, nil
@@ -187,6 +202,7 @@ func (ch *ChatsHandler) LeaveChat(ctx context.Context, params api.LeaveChatParam
 			return &api.ChatNotFoundResponse{}, nil
 		}
 		logger.FromCtx(ctx).Error("leave chat", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 
 	return &api.LeaveChatNoContent{}, nil
@@ -224,7 +240,9 @@ func (ch *ChatsHandler) SetRole(ctx context.Context, req *api.SetRoleReq, params
 		if errors.Is(err, models.ErrRoleNotFound) {
 			return &api.SetRoleNotFound{}, nil
 		}
+
 		logger.FromCtx(ctx).Error("set role", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
 	}
 
 	return &api.SetRoleNoContent{}, nil

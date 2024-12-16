@@ -14,4 +14,5 @@ type MembersRepo interface {
 	CheckMemberIsBanned(ctx context.Context, chatid int, userId string) (bool, error)
 	AddMemberToBanned(ctx context.Context, chatId int, userId string) error
 	DeleteMemberFromBanned(ctx context.Context, chatId int, userId string) error
+	ListBannedMembers(ctx context.Context, chatId int) ([]string, error)
 }

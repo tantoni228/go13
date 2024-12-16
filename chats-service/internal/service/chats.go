@@ -237,3 +237,14 @@ func (cs *ChatsService) UnbanUser(ctx context.Context, chatId int, userId string
 
 	return nil
 }
+
+func (cs *ChatsService) ListBannedMembers(ctx context.Context, chatId int) ([]string, error) {
+	op := "ChatsService.ListBannedMembers"
+
+	bannedMembers, err := cs.membersRepo.ListBannedMembers(ctx, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return bannedMembers, nil
+}
