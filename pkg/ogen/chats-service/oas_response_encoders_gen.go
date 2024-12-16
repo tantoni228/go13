@@ -389,6 +389,57 @@ func encodeGetJoinCodeResponse(response GetJoinCodeRes, w http.ResponseWriter) e
 	}
 }
 
+func encodeGetMyRoleResponse(response GetMyRoleRes, w http.ResponseWriter) error {
+	switch response := response.(type) {
+	case *Role:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *InvalidInputResponse:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(400)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *UnauthenticatedResponse:
+		w.WriteHeader(401)
+
+		return nil
+
+	case *UnauthorizedResponse:
+		w.WriteHeader(403)
+
+		return nil
+
+	case *ChatNotFoundResponse:
+		w.WriteHeader(404)
+
+		return nil
+
+	case *InternalErrorResponse:
+		w.WriteHeader(500)
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeGetRoleByIdResponse(response GetRoleByIdRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
 	case *Role:

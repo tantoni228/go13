@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 	"go13/pkg/logger"
 	chapi "go13/pkg/ogen/chats-service"
 	mapi "go13/pkg/ogen/messages-service"
@@ -17,15 +18,15 @@ import (
 type AccessService struct {
 	chatsServer    *chapi.Server
 	messagesServer *mapi.Server
-	chatsRepo      ChatsRepo
-	rolesRepo      RolesRepo
-	messagesRepo   MessagesRepo
+	chatsRepo      repo.ChatsRepo
+	rolesRepo      repo.RolesRepo
+	messagesRepo   repo.MessagesRepo
 }
 
 func NewAccessService(
-	chatsRepo ChatsRepo,
-	rolesRepo RolesRepo,
-	messagesRepo MessagesRepo,
+	chatsRepo repo.ChatsRepo,
+	rolesRepo repo.RolesRepo,
+	messagesRepo repo.MessagesRepo,
 ) *AccessService {
 	return &AccessService{
 		chatsServer:    &chapi.Server{},
@@ -65,6 +66,9 @@ func (as *AccessService) CheckAccess(ctx context.Context, userId string, method 
 
 		case chapi.GetJoinCodeOperation:
 			return as.CheckGetJoinCode(ctx, userId, route, u)
+
+		case chapi.GetMyRoleOperation:
+			return as.CheckGetMyRole(ctx, userId, route, u)
 
 		case chapi.GetRoleByIdOperation:
 			return as.CheckGetRoleById(ctx, userId, route, u)
@@ -458,6 +462,30 @@ func (as *AccessService) CheckGetJoinCode(ctx context.Context, userId string, ro
 
 	if !role.CanGetJoinCode {
 		return models.ErrAccessForbidden
+	}
+
+	return nil
+}
+
+func (as *AccessService) CheckGetMyRole(ctx context.Context, userId string, route chapi.Route, u *url.URL) error {
+	op := "AccessServiceCheckGetMyRole"
+
+	chatId, err := getChatIdFromQuery(u)
+	if err != nil {
+		return models.ErrInvalidRouteParams
+	}
+
+	_, err = as.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return fmt.Errorf("%s: get chat by id: %w", op, err)
+	}
+
+	_, err = as.rolesRepo.GetRoleForMember(ctx, chatId, userId)
+	if err != nil {
+		if errors.Is(err, models.ErrMemberNotFound) {
+			return models.ErrAccessForbidden
+		}
+		return fmt.Errorf("%s: get role for user: %w", op, err)
 	}
 
 	return nil

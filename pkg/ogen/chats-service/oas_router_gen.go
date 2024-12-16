@@ -430,6 +430,27 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						}
 
 						elem = origElem
+					case 'm': // Prefix: "my"
+						origElem := elem
+						if l := len("my"); len(elem) >= l && elem[0:l] == "my" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "GET":
+								s.handleGetMyRoleRequest([0]string{}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, "GET")
+							}
+
+							return
+						}
+
+						elem = origElem
 					}
 					// Param: "roleId"
 					// Leaf parameter
@@ -966,6 +987,31 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.summary = "Check access to uri with method"
 								r.operationID = "CheckAccess"
 								r.pathPattern = "/roles/check-access"
+								r.args = args
+								r.count = 0
+								return r, true
+							default:
+								return
+							}
+						}
+
+						elem = origElem
+					case 'm': // Prefix: "my"
+						origElem := elem
+						if l := len("my"); len(elem) >= l && elem[0:l] == "my" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "GET":
+								r.name = GetMyRoleOperation
+								r.summary = "Get my role in chat"
+								r.operationID = "getMyRole"
+								r.pathPattern = "/roles/my"
 								r.args = args
 								r.count = 0
 								return r, true

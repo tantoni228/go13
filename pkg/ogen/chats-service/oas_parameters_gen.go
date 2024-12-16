@@ -674,6 +674,71 @@ func decodeGetJoinCodeParams(args [1]string, argsEscaped bool, r *http.Request) 
 	return params, nil
 }
 
+// GetMyRoleParams is parameters of getMyRole operation.
+type GetMyRoleParams struct {
+	// Chat id.
+	ChatId ChatId
+}
+
+func unpackGetMyRoleParams(packed middleware.Parameters) (params GetMyRoleParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "chatId",
+			In:   "query",
+		}
+		params.ChatId = packed[key].(ChatId)
+	}
+	return params
+}
+
+func decodeGetMyRoleParams(args [0]string, argsEscaped bool, r *http.Request) (params GetMyRoleParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: chatId.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "chatId",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotChatIdVal int
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotChatIdVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.ChatId = ChatId(paramsDotChatIdVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "chatId",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetRoleByIdParams is parameters of getRoleById operation.
 type GetRoleByIdParams struct {
 	// Role id.

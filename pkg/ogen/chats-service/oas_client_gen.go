@@ -127,6 +127,12 @@ type RolesInvoker interface {
 	//
 	// DELETE /roles/{roleId}
 	DeleteRole(ctx context.Context, params DeleteRoleParams) (DeleteRoleRes, error)
+	// GetMyRole invokes getMyRole operation.
+	//
+	// Get my role in chat.
+	//
+	// GET /roles/my
+	GetMyRole(ctx context.Context, params GetMyRoleParams) (GetMyRoleRes, error)
 	// GetRoleById invokes getRoleById operation.
 	//
 	// Get role in Chat.
@@ -950,6 +956,95 @@ func (c *Client) sendGetJoinCode(ctx context.Context, params GetJoinCodeParams) 
 	defer resp.Body.Close()
 
 	result, err := decodeGetJoinCodeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetMyRole invokes getMyRole operation.
+//
+// Get my role in chat.
+//
+// GET /roles/my
+func (c *Client) GetMyRole(ctx context.Context, params GetMyRoleParams) (GetMyRoleRes, error) {
+	res, err := c.sendGetMyRole(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetMyRole(ctx context.Context, params GetMyRoleParams) (res GetMyRoleRes, err error) {
+
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/roles/my"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "chatId" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "chatId",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if unwrapped := int(params.ChatId); true {
+				return e.EncodeValue(conv.IntToString(unwrapped))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityBearerAuth(ctx, GetMyRoleOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	result, err := decodeGetMyRoleResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

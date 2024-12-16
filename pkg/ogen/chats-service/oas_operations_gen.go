@@ -14,6 +14,7 @@ const (
 	DeleteRoleOperation      OperationName = "DeleteRole"
 	GetChatByIdOperation     OperationName = "GetChatById"
 	GetJoinCodeOperation     OperationName = "GetJoinCode"
+	GetMyRoleOperation       OperationName = "GetMyRole"
 	GetRoleByIdOperation     OperationName = "GetRoleById"
 	JoinChatOperation        OperationName = "JoinChat"
 	LeaveChatOperation       OperationName = "LeaveChat"

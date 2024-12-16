@@ -4,19 +4,20 @@ import (
 	"context"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 )
 
 type RolesService struct {
-	rolesRepo   RolesRepo
-	membersRepo MembersRepo
+	rolesRepo   repo.RolesRepo
+	membersRepo repo.MembersRepo
 	trManager   trm.Manager
 }
 
 func NewRolesService(
-	rolesRepo RolesRepo,
-	membersRepo MembersRepo,
+	rolesRepo repo.RolesRepo,
+	membersRepo repo.MembersRepo,
 	trManager trm.Manager,
 ) *RolesService {
 	return &RolesService{
@@ -53,6 +54,17 @@ func (rs *RolesService) GetRoleById(ctx context.Context, chatId int, roleId int)
 	op := "RolesService.GetRoleById"
 
 	role, err := rs.rolesRepo.GetRoleById(ctx, chatId, roleId)
+	if err != nil {
+		return models.Role{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return role, nil
+}
+
+func (rs *RolesService) GetRoleForUser(ctx context.Context, chatId int, userId string) (models.Role, error) {
+	op := "RolesService.GetRoleForUser"
+
+	role, err := rs.rolesRepo.GetRoleForMember(ctx, chatId, userId)
 	if err != nil {
 		return models.Role{}, fmt.Errorf("%s: %w", op, err)
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go13/chats-service/internal/models"
+	"go13/chats-service/internal/repo"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,17 +16,17 @@ var (
 )
 
 type ChatsService struct {
-	chatsRepo      ChatsRepo
-	rolesRepo      RolesRepo
-	membersRepo    MembersRepo
+	chatsRepo      repo.ChatsRepo
+	rolesRepo      repo.RolesRepo
+	membersRepo    repo.MembersRepo
 	joinCodeSecret string
 	trManager      trm.Manager
 }
 
 func NewChatsService(
-	chatsRepo ChatsRepo,
-	rolesRepo RolesRepo,
-	membersRepo MembersRepo,
+	chatsRepo repo.ChatsRepo,
+	rolesRepo repo.RolesRepo,
+	membersRepo repo.MembersRepo,
 	trManager trm.Manager,
 	joinCodeSecret string,
 ) *ChatsService {
@@ -77,6 +78,39 @@ func (cs *ChatsService) CreateChat(ctx context.Context, creatorId string, chat m
 	return resChat, nil
 }
 
+func (cs *ChatsService) ListChatsForUser(ctx context.Context, userId string) ([]models.Chat, error) {
+	op := "ChatsService.ListChatsForUser"
+
+	chats, err := cs.chatsRepo.ListChatsForUser(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return chats, nil
+}
+
+func (cs *ChatsService) GetChatById(ctx context.Context, chatId int) (models.Chat, error) {
+	op := "ChatsService.GetChatById"
+
+	chat, err := cs.chatsRepo.GetChatById(ctx, chatId)
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return chat, nil
+}
+
+func (cs *ChatsService) UpdateChat(ctx context.Context, chatId int, newChat models.Chat) (models.Chat, error) {
+	op := "ChatsService.UpdateChat"
+
+	updatedChat, err := cs.chatsRepo.UpdateChat(ctx, chatId, newChat)
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return updatedChat, nil
+}
+
 func (cs *ChatsService) DeleteChat(ctx context.Context, chatId int) error {
 	op := "ChatsService.DeleteChat"
 
@@ -97,6 +131,17 @@ func (cs *ChatsService) DeleteChat(ctx context.Context, chatId int) error {
 	}
 
 	return nil
+}
+
+func (cs *ChatsService) ListMembers(ctx context.Context, chatId int) ([]models.Member, error) {
+	op := "ChatsService.ListMembers"
+
+	members, err := cs.membersRepo.ListMembers(ctx, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return members, nil
 }
 
 func (cs *ChatsService) GetJoinCode(ctx context.Context, chatId int) (string, error) {
@@ -190,4 +235,60 @@ func (cs *ChatsService) SetRole(ctx context.Context, chatId int, userId string, 
 	}
 
 	return nil
+}
+
+func (cs *ChatsService) BanUser(ctx context.Context, chatId int, userId string) error {
+	op := "ChatsService.BanUser"
+
+	err := cs.trManager.Do(ctx, func(ctx context.Context) error {
+		if err := cs.membersRepo.AddMemberToBanned(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("add member to banned: %w", err)
+		}
+		if err := cs.membersRepo.DeleteMember(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("delete member: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%s: trmanager.Do: %w", op, err)
+	}
+
+	return nil
+}
+
+func (cs *ChatsService) UnbanUser(ctx context.Context, chatId int, userId string) error {
+	op := "ChatsService.UnbanUser"
+
+	err := cs.trManager.Do(ctx, func(ctx context.Context) error {
+		if err := cs.membersRepo.DeleteMemberFromBanned(ctx, chatId, userId); err != nil {
+			return fmt.Errorf("delete member from banned: %w", err)
+		}
+		roleId, err := cs.rolesRepo.GetMemberRoleId(ctx, chatId)
+		if err != nil {
+			return fmt.Errorf("get member role id: %w", err)
+		}
+		if err := cs.membersRepo.AddMember(ctx, chatId, models.Member{
+			UserId: userId,
+			RoleId: roleId,
+		}); err != nil {
+			return fmt.Errorf("add member: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%s: trmanager.Do: %w", op, err)
+	}
+
+	return nil
+}
+
+func (cs *ChatsService) ListBannedMembers(ctx context.Context, chatId int) ([]string, error) {
+	op := "ChatsService.ListBannedMembers"
+
+	bannedMembers, err := cs.membersRepo.ListBannedMembers(ctx, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return bannedMembers, nil
 }

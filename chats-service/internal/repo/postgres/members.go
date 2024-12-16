@@ -54,6 +54,27 @@ func (mr *MembersRepo) AddMember(ctx context.Context, chatId int, member models.
 	return nil
 }
 
+func (mr *MembersRepo) ListMembers(ctx context.Context, chatId int) ([]models.Member, error) {
+	op := "MembersRepo.ListMembers"
+
+	sql, args, err := mr.sq.
+		Select("user_id", "role_id").
+		From("members").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var members []models.Member
+	err = mr.getter.DefaultTrOrDB(ctx, mr.db).SelectContext(ctx, &members, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return members, nil
+}
+
 func (mr *MembersRepo) DeleteMember(ctx context.Context, chatId int, userId string) error {
 	op := "MembersRepo.DeleteMember"
 
@@ -186,4 +207,84 @@ func (mr *MembersRepo) CheckMemberIsBanned(ctx context.Context, chatId int, user
 	}
 
 	return count != 0, nil
+}
+
+func (mr *MembersRepo) AddMemberToBanned(ctx context.Context, chatId int, userId string) error {
+	op := "MembersRepo.AddMemberToBanned"
+
+	sql, args, err := mr.sq.
+		Insert("banned_members").
+		Columns("chat_id", "user_id").
+		Values(chatId, userId).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	_, err = mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23505":
+				return models.ErrUserAlreadyBanned
+			case "23503":
+				return models.ErrChatNotFound
+			}
+		}
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	return nil
+}
+
+func (mr *MembersRepo) DeleteMemberFromBanned(ctx context.Context, chatId int, userId string) error {
+	op := "MembersRepo.DeleteMemberFromBanned"
+
+	sql, args, err := mr.sq.
+		Delete("banned_members").
+		Where(squirrel.And{
+			squirrel.Eq{"chat_id": chatId},
+			squirrel.Eq{"user_id": userId},
+		}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	cmd, err := mr.getter.DefaultTrOrDB(ctx, mr.db).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: ExecContext: %w", op, err)
+	}
+
+	affected, err := cmd.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: RowsAffected: %w", op, err)
+	}
+
+	if affected == 0 {
+		return models.ErrMemberNotFound
+	}
+
+	return nil
+}
+
+func (mr *MembersRepo) ListBannedMembers(ctx context.Context, chatId int) ([]string, error) {
+	op := "MembersRepo.ListbannedMembers"
+
+	sql, args, err := mr.sq.
+		Select("user_id").
+		From("banned_members").
+		Where(squirrel.Eq{"chat_id": chatId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var bannedmembers []string
+	err = mr.getter.DefaultTrOrDB(ctx, mr.db).SelectContext(ctx, &bannedmembers, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return bannedmembers, nil
 }

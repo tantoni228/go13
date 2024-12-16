@@ -49,6 +49,31 @@ func (cr *ChatsRepo) CreateChat(ctx context.Context, chat models.Chat) (models.C
 	return chat, nil
 }
 
+func (cr *ChatsRepo) ListChatsForUser(ctx context.Context, userId string) ([]models.Chat, error) {
+	op := "ChatsRepo.ListChatsForUser"
+
+	sql, args, err := cr.sq.
+		Select(
+			"chats.id as id",
+			"chats.name as name",
+			"chats.description as description",
+		).From("chats").
+		Join("members on chats.id = members.chat_id").
+		Where(squirrel.Eq{"members.user_id": userId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var chats []models.Chat
+	err = cr.getter.DefaultTrOrDB(ctx, cr.db).SelectContext(ctx, &chats, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: SelectContext: %w", op, err)
+	}
+
+	return chats, nil
+}
+
 func (cr *ChatsRepo) GetChatById(ctx context.Context, chatId int) (models.Chat, error) {
 	op := "ChatsRepo.GetChatById"
 
@@ -72,6 +97,32 @@ func (cr *ChatsRepo) GetChatById(ctx context.Context, chatId int) (models.Chat, 
 	}
 
 	return chat, nil
+}
+
+func (cr *ChatsRepo) UpdateChat(ctx context.Context, chatId int, newChat models.Chat) (models.Chat, error) {
+	op := "ChatsRepo.UpdateChat"
+
+	query, args, err := cr.sq.
+		Update("chats").
+		Set("name", newChat.Name).
+		Set("description", newChat.Description).
+		Where(squirrel.Eq{"id": chatId}).
+		Suffix("RETURNING id, name, description").
+		ToSql()
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%s: build query: %w", op, err)
+	}
+
+	var updatedChat models.Chat
+	err = cr.getter.DefaultTrOrDB(ctx, cr.db).GetContext(ctx, &updatedChat, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Chat{}, models.ErrChatNotFound
+		}
+		return models.Chat{}, fmt.Errorf("%s: GetContext: %w", op, err)
+	}
+
+	return updatedChat, nil
 }
 
 func (cr *ChatsRepo) DeleteChat(ctx context.Context, chatId int) error {

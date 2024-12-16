@@ -125,6 +125,7 @@ func (*ChatNotFoundResponse) createRoleRes()      {}
 func (*ChatNotFoundResponse) deleteChatRes()      {}
 func (*ChatNotFoundResponse) getChatByIdRes()     {}
 func (*ChatNotFoundResponse) getJoinCodeRes()     {}
+func (*ChatNotFoundResponse) getMyRoleRes()       {}
 func (*ChatNotFoundResponse) joinChatRes()        {}
 func (*ChatNotFoundResponse) leaveChatRes()       {}
 func (*ChatNotFoundResponse) listBannedUsersRes() {}
@@ -233,6 +234,7 @@ func (*InternalErrorResponse) deleteChatRes()      {}
 func (*InternalErrorResponse) deleteRoleRes()      {}
 func (*InternalErrorResponse) getChatByIdRes()     {}
 func (*InternalErrorResponse) getJoinCodeRes()     {}
+func (*InternalErrorResponse) getMyRoleRes()       {}
 func (*InternalErrorResponse) getRoleByIdRes()     {}
 func (*InternalErrorResponse) joinChatRes()        {}
 func (*InternalErrorResponse) leaveChatRes()       {}
@@ -267,6 +269,7 @@ func (*InvalidInputResponse) deleteChatRes()      {}
 func (*InvalidInputResponse) deleteRoleRes()      {}
 func (*InvalidInputResponse) getChatByIdRes()     {}
 func (*InvalidInputResponse) getJoinCodeRes()     {}
+func (*InvalidInputResponse) getMyRoleRes()       {}
 func (*InvalidInputResponse) getRoleByIdRes()     {}
 func (*InvalidInputResponse) joinChatRes()        {}
 func (*InvalidInputResponse) leaveChatRes()       {}
@@ -469,6 +472,7 @@ func (s *Role) SetCanDeleteChat(val bool) {
 }
 
 func (*Role) createRoleRes()  {}
+func (*Role) getMyRoleRes()   {}
 func (*Role) getRoleByIdRes() {}
 func (*Role) updateRoleRes()  {}
 
@@ -590,6 +594,7 @@ func (*UnauthenticatedResponse) deleteChatRes()      {}
 func (*UnauthenticatedResponse) deleteRoleRes()      {}
 func (*UnauthenticatedResponse) getChatByIdRes()     {}
 func (*UnauthenticatedResponse) getJoinCodeRes()     {}
+func (*UnauthenticatedResponse) getMyRoleRes()       {}
 func (*UnauthenticatedResponse) getRoleByIdRes()     {}
 func (*UnauthenticatedResponse) joinChatRes()        {}
 func (*UnauthenticatedResponse) leaveChatRes()       {}
@@ -612,6 +617,7 @@ func (*UnauthorizedResponse) deleteChatRes()      {}
 func (*UnauthorizedResponse) deleteRoleRes()      {}
 func (*UnauthorizedResponse) getChatByIdRes()     {}
 func (*UnauthorizedResponse) getJoinCodeRes()     {}
+func (*UnauthorizedResponse) getMyRoleRes()       {}
 func (*UnauthorizedResponse) getRoleByIdRes()     {}
 func (*UnauthorizedResponse) joinChatRes()        {}
 func (*UnauthorizedResponse) listBannedUsersRes() {}
