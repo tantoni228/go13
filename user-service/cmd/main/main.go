@@ -7,16 +7,18 @@ import (
 	"go13/pkg/logger"
 	"go13/pkg/postgres"
 	"go13/user-service/internal/config"
+	repo "go13/user-service/internal/repo/postgres"
+	"go13/user-service/internal/service"
+	"go13/user-service/internal/transport/rest/handlers"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	repo "go13/user-service/internal/repo/postgres"
-	"go13/user-service/internal/service"
-	"go13/user-service/internal/transport/rest/handlers"
-	"go13/user-service/internal/transport/rest"
+
+	"go13/user-service/internal/transport/rest/server"
+
 	"go.uber.org/zap"
 )
 
@@ -51,14 +53,13 @@ func main() {
 		panic(err)
 	}
 
-
 	repo := repo.NewUsersRepo(db)
 
 	srv := service.NewUserService(repo)
 
 	userHandler := handlers.NewUserHandler(srv)
 
-	server, err := rest.NewServer(userHandler, l, cfg.Port)
+	server, err := server.NewServer(userHandler, l, cfg.Port)
 	if err != nil {
 		l.Fatal("error while init server", zap.Error(err))
 	}

@@ -97,8 +97,23 @@ func (ur *UserRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInR
 // 	return res, nil
 // }
 
-func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-	
+func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq, UserId string) (models.Password, error) {
+
+	updateQuery, args, err := sq.Update("users").
+		Set("user_password", req.NewPassword).
+		Where(sq.Eq{"user_id": UserId}).
+		ToSql()
+	if err != nil {
+		return models.Password(req.OldPassword), fmt.Errorf("failed to build update query: %w", err)
+	}
+
+	// Execute the update query
+	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
+	if err != nil {
+		return models.Password(req.OldPassword), fmt.Errorf("failed to execute update query: %w", err)
+	}
+
+	return models.Password(req.NewPassword), nil
 }
 
 func (ur *UserRepo) UpdateUser(ctx context.Context, userId string, user models.User) error {

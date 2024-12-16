@@ -1,12 +1,12 @@
-package rest
+package server
 
 import (
 	"context"
 	"fmt"
+	api "go13/pkg/ogen/users-service"
 	"go13/user-service/internal/transport/rest/auth"
 	"go13/user-service/internal/transport/rest/handlers"
 	"go13/user-service/internal/transport/rest/middlewares"
-	api "go13/pkg/ogen/users-service"
 	"net/http"
 
 	"go.uber.org/zap"
