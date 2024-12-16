@@ -13,14 +13,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type UsersRepo struct {
+type UserRepo struct {
 	db *postgres.Postgres
 }
 
-func NewUsersRepo(pg *postgres.Postgres) *UsersRepo {
-	return &UsersRepo{
-		db: pg,
-	}
+func NewUsersRepo(pg *postgres.Postgres) *UserRepo {
+	return &UserRepo{db: pg}
 }
 
 func GenerateRandomUUID() string {
@@ -28,7 +26,7 @@ func GenerateRandomUUID() string {
 	return id.String()
 }
 
-func (ur *UsersRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
+func (ur *UserRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
 	var res api.SignUpRes
 
 	exists, err := ur.CheckUser(ctx, string(req.Email))
@@ -55,7 +53,7 @@ func (ur *UsersRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUp
 	return res, nil
 }
 
-func (ur *UsersRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
+func (ur *UserRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
 	var res api.SignInRes
 
 	// Prepare the select query to find the user
@@ -79,27 +77,31 @@ func (ur *UsersRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignIn
 	return res, nil
 }
 
-func (ur *UsersRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq, UserId string) (api.ChangePasswordRes, error) {
-	var res api.ChangePasswordRes
+// func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+// 	var res api.ChangePasswordRes
 
-	updateQuery, args, err := sq.Update("users").
-		Set("user_password", req.NewPassword).
-		Where(sq.Eq{"user_id": UserId}).
-		ToSql()
-	if err != nil {
-		return res, fmt.Errorf("failed to build update query: %w", err)
-	}
+// 	updateQuery, args, err := sq.Update("users").
+// 		Set("user_password", req.NewPassword).
+// 		Where(sq.Eq{"user_id": UserId}).
+// 		ToSql()
+// 	if err != nil {
+// 		return res, fmt.Errorf("failed to build update query: %w", err)
+// 	}
 
-	// Execute the update query
-	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
-	if err != nil {
-		return res, fmt.Errorf("failed to execute update query: %w", err)
-	}
+// 	// Execute the update query
+// 	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
+// 	if err != nil {
+// 		return res, fmt.Errorf("failed to execute update query: %w", err)
+// 	}
 
-	return res, nil
+// 	return res, nil
+// }
+
+func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+	
 }
 
-func (ur *UsersRepo) UpdateUser(ctx context.Context, userId string, user models.User) error {
+func (ur *UserRepo) UpdateUser(ctx context.Context, userId string, user models.User) error {
 	updateQuery, args, err := sq.Update("users").
 		Set("user_name", user.Username).
 		Set("user_email", user.Email).
@@ -119,29 +121,29 @@ func (ur *UsersRepo) UpdateUser(ctx context.Context, userId string, user models.
 	return nil
 }
 
-func (ur *UsersRepo) GetUserById(ctx context.Context, userId string) (models.User, error) {
-	var user models.User
+// func (ur *UserRepo) GetUserById(ctx context.Context, userId string) (models.User, error) {
+// 	var user models.User
 
-	sqlQuery, args, err := sq.Select("user_id", "user_name", "user_email", "user_password", "user_bio").
-		From("users").
-		Where(sq.Eq{"user_id": userId}).
-		ToSql()
-	if err != nil {
-		return user, fmt.Errorf("failed to build query: %w", err)
-	}
+// 	sqlQuery, args, err := sq.Select("user_id", "user_name", "user_email", "user_password", "user_bio").
+// 		From("users").
+// 		Where(sq.Eq{"user_id": userId}).
+// 		ToSql()
+// 	if err != nil {
+// 		return user, fmt.Errorf("failed to build query: %w", err)
+// 	}
 
-	err = ur.db.DB.QueryRowContext(ctx, sqlQuery, args...).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Bio)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, models.ErrIDNotFound
-		}
-		return user, fmt.Errorf("failed to execute query: %w", err)
-	}
+// 	err = ur.db.DB.QueryRowContext(ctx, sqlQuery, args...).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Bio)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return user, models.ErrIDNotFound
+// 		}
+// 		return user, fmt.Errorf("failed to execute query: %w", err)
+// 	}
 
-	return user, nil
-}
+// 	return user, nil
+// }
 
-func (ur *UsersRepo) CheckUser(ctx context.Context, userId string) (bool, error) {
+func (ur *UserRepo) CheckUser(ctx context.Context, userId string) (bool, error) {
 	var exists bool
 
 	existsQuery, args, err := sq.Select("exists(select 1 from users where user_id = ?)", userId).

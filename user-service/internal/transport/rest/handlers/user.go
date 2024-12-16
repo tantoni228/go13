@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"go13/user-service/internal/service"
 	"go13/pkg/logger"
 	api "go13/pkg/ogen/users-service"
 	"go13/user-service/internal/models"
@@ -11,29 +12,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type AuthRepo interface {
-	CheckToken(ctx context.Context) (api.CheckTokenRes, error)
-	SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error)
-	SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error)
-}
-
-type UsersRepo interface {
-	ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
-	GetMe(ctx context.Context) (api.GetMeRes, error)
-	UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error)
-	GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error)
-}
-
-type UserService struct {
-	UserRepo UsersRepo
-	AuthRepo AuthRepo
-}
 
 type UserHandler struct {
-	service UserService
+	service *service.UserService
 }
 
-func NewUserHandler(srv UserService) *UserHandler {
+func NewUserHandler(srv *service.UserService) *UserHandler {
 	return &UserHandler{service: srv}
 }
 
@@ -44,7 +28,7 @@ func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.Sign
 		Password: models.Password(req.GetUsername()),
 	}
 
-	_, err := uh.service.AuthRepo.SignUp(ctx, &api.SignUpReq{Email: api.Email(UserInfo.Email),
+	_, err := uh.service.SignUp(ctx, &api.SignUpReq{Email: api.Email(UserInfo.Email),
 		Username: string(UserInfo.Username), Password: api.Password(UserInfo.Password)})
 	if err != nil {
 		if errors.Is(err, models.ErrEmailAlreadyExisting) || errors.Is(err, models.ErrUsernameAlreadyExisting) {
@@ -62,7 +46,7 @@ func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.Sign
 		Password: models.Password(req.GetPassword()),
 	}
 
-	user, err := uh.service.AuthRepo.SignIn(ctx, &api.SignInReq{Email: api.Email(LogInInfo.Email),
+	user, err := uh.service.SignIn(ctx, &api.SignInReq{Email: api.Email(LogInInfo.Email),
 		Password: api.Password(LogInInfo.Password)})
 	if err != nil {
 		if errors.Is(err, models.ErrUsernameNotFound) || errors.Is(err, models.ErrPasswordIsIncorrect) {
@@ -75,27 +59,27 @@ func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.Sign
 	return user, nil
 }
 
-func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
-		OldPassword: req.GetOldPassword(),
-		NewPassword: req.GetNewPassword(),
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
-		return &api.InternalErrorResponse{}, nil
-	}
-	return resp, nil
-}
+// func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+// 	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
+// 		OldPassword: req.GetOldPassword(),
+// 		NewPassword: req.GetNewPassword(),
+// 	})
+// 	if err != nil {
+// 		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
+// 		return &api.InternalErrorResponse{}, nil
+// 	}
+// 	return resp, nil
+// }
 
-func (uh *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
-	resp, err := uh.service.UserRepo.GetUserById(ctx, params)
-	if err != nil {
-		if errors.Is(err, models.ErrIDNotFound) {
-			return &api.UserNotFoundResponse{}, nil // используем правильный тип ответа
-		}
-		logger.FromCtx(ctx).Error("getting user by id", zap.Error(err))
-		return &api.InternalErrorResponse{}, nil
-	}
+// func (uh *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
+// 	resp, err := uh.service.UserRepo.GetUserById(ctx, params)
+// 	if err != nil {
+// 		if errors.Is(err, models.ErrIDNotFound) {
+// 			return &api.UserNotFoundResponse{}, nil // используем правильный тип ответа
+// 		}
+// 		logger.FromCtx(ctx).Error("getting user by id", zap.Error(err))
+// 		return &api.InternalErrorResponse{}, nil
+// 	}
 
-	return resp, nil
-}
+// 	return resp, nil
+// }
