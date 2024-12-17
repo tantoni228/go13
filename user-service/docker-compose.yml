@@ -7,7 +7,7 @@ services:
       - POSTGRES_USER=user_service
       - POSTGRES_PASSWORD=secret
     volumes:
-      - chats_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -d chats -U user_service
       interval: 5s
@@ -23,11 +23,11 @@ services:
       - ./migrations:/migrations
     entrypoint: >
       sh -c 'migrate -path /migrations \
-        -database "postgres://chats_service:secret@postgres:5432/users?sslmode=disable" up
+        -database "postgres://user_service:secret@postgres:5432/chats?sslmode=disable" up
       '
     depends_on:
       postgres:
         condition: service_healthy
-
+  
 volumes:
-  chats_postgres_data:
+  postgres_data:

@@ -8,6 +8,7 @@ import (
 	api "go13/pkg/ogen/users-service"
 	"go13/pkg/postgres"
 	"go13/user-service/internal/models"
+	"go13/user-service/internal/transport/rest/auth"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
@@ -27,30 +28,19 @@ func GenerateRandomUUID() string {
 }
 
 func (ur *UserRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
-	var res api.SignUpRes
-
-	exists, err := ur.CheckUser(ctx, string(req.Email))
-	if err != nil {
-		return res, err
-	}
-	if exists {
-		return res, fmt.Errorf("user already exists")
-	}
-
-	insertQuery, args, err := sq.Insert("users").
+	err := sq.Insert("users").
 		Columns("user_id", "user_name", "user_email", "user_password").
-		Values(GenerateRandomUUID(), req.Username, req.Email, req.Password).
-		ToSql()
+		Values(uuid.New()).
+		Suffix("returning *").
+		PlaceholderFormat(sq.Dollar).
+		RunWith(ur.db.DB.DB).
+		QueryRow()
+	
 	if err != nil {
-		return res, fmt.Errorf("failed to build insert query: %w", err)
+		return nil, fmt.Errorf("repository.SignUp %w", err)
 	}
 
-	_, err = ur.db.DB.ExecContext(ctx, insertQuery, args...)
-	if err != nil {
-		return res, fmt.Errorf("failed to execute insert query: %w", err)
-	}
-
-	return res, nil
+	return &api.SignUpNoContent{}, nil
 }
 
 func (ur *UserRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
@@ -77,44 +67,44 @@ func (ur *UserRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInR
 	return res, nil
 }
 
-// func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-// 	var res api.ChangePasswordRes
+func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+	var res api.ChangePasswordRes
+
+	updateQuery, args, err := sq.Update("users").
+		Set("user_password", req.NewPassword).
+		Where(sq.Eq{"user_id": auth.UserIdFromCtx(ctx)}).
+		ToSql()
+	if err != nil {
+		return res, fmt.Errorf("failed to build update query: %w", err)
+	}
+
+	// Execute the update query
+	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
+	if err != nil {
+		return res, fmt.Errorf("failed to execute update query: %w", err)
+	}
+
+	return res, nil
+}
+
+// func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq, UserId string) (models.Password, error) {
 
 // 	updateQuery, args, err := sq.Update("users").
 // 		Set("user_password", req.NewPassword).
 // 		Where(sq.Eq{"user_id": UserId}).
 // 		ToSql()
 // 	if err != nil {
-// 		return res, fmt.Errorf("failed to build update query: %w", err)
+// 		return models.Password(req.OldPassword), fmt.Errorf("failed to build update query: %w", err)
 // 	}
 
 // 	// Execute the update query
 // 	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
 // 	if err != nil {
-// 		return res, fmt.Errorf("failed to execute update query: %w", err)
+// 		return models.Password(req.OldPassword), fmt.Errorf("failed to execute update query: %w", err)
 // 	}
 
-// 	return res, nil
+// 	return models.Password(req.NewPassword), nil
 // }
-
-func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq, UserId string) (models.Password, error) {
-
-	updateQuery, args, err := sq.Update("users").
-		Set("user_password", req.NewPassword).
-		Where(sq.Eq{"user_id": UserId}).
-		ToSql()
-	if err != nil {
-		return models.Password(req.OldPassword), fmt.Errorf("failed to build update query: %w", err)
-	}
-
-	// Execute the update query
-	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
-	if err != nil {
-		return models.Password(req.OldPassword), fmt.Errorf("failed to execute update query: %w", err)
-	}
-
-	return models.Password(req.NewPassword), nil
-}
 
 func (ur *UserRepo) UpdateUser(ctx context.Context, userId string, user models.User) error {
 	updateQuery, args, err := sq.Update("users").

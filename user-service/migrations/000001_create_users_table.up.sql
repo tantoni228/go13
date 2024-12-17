@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS users (
     user_name VARCHAR NOT NULL UNIQUE,
     user_email VARCHAR NOT NULL UNIQUE,
     user_password VARCHAR NOT NULL,
-    user_bio TEXT,
+    user_bio TEXT
 );

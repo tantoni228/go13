@@ -59,17 +59,17 @@ func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.Sign
 	return user, nil
 }
 
-// func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-// 	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
-// 		OldPassword: req.GetOldPassword(),
-// 		NewPassword: req.GetNewPassword(),
-// 	})
-// 	if err != nil {
-// 		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
-// 		return &api.InternalErrorResponse{}, nil
-// 	}
-// 	return resp, nil
-// }
+func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
+		OldPassword: req.GetOldPassword(),
+		NewPassword: req.GetNewPassword(),
+	})
+	if err != nil {
+		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+	return resp, nil
+}
 
 // func (uh *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
 // 	resp, err := uh.service.UserRepo.GetUserById(ctx, params)
@@ -83,3 +83,23 @@ func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.Sign
 
 // 	return resp, nil
 // }
+
+// CheckToken implements api.Handler.
+func (h *UserHandler) CheckToken(ctx context.Context) (api.CheckTokenRes, error) {
+	panic("unimplemented")
+}
+
+// GetMe implements api.Handler.
+func (h *UserHandler) GetMe(ctx context.Context) (api.GetMeRes, error) {
+	panic("unimplemented")
+}
+
+// GetUserById implements api.Handler.
+func (h *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
+	panic("unimplemented")
+}
+
+// UpdateMe implements api.Handler.
+func (h *UserHandler) UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error) {
+	panic("unimplemented")
+}

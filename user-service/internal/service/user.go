@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepo interface {
-  // ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
+  ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error)
   // GetMe(ctx context.Context) (api.GetMeRes, error)
   UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error)
   // GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error)
