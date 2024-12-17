@@ -35,7 +35,7 @@ func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.Sign
 			return &api.SignUpConflict{}, nil
 		}
 		logger.FromCtx(ctx).Error("signing up", zap.Error(err))
-		return &api.InternalErrorResponse{}, nil
+		return &api.InternalErrorResponse{}, err
 	}
 	return &api.SignUpNoContent{}, nil
 }

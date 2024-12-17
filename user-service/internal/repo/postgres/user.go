@@ -28,18 +28,16 @@ func GenerateRandomUUID() string {
 }
 
 func (ur *UserRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
-	err := sq.Insert("users").
-		Columns("user_id", "user_name", "user_email", "user_password").
-		Values(uuid.New()).
+	_, err := sq.Insert("users").
+		Columns("id", "user_name", "user_email", "user_password").
+		Values(uuid.New(), req.Username, req.Email, req.Password).
 		Suffix("returning *").
 		PlaceholderFormat(sq.Dollar).
 		RunWith(ur.db.DB.DB).
-		QueryRow()
-	
+		Exec()
 	if err != nil {
-		return nil, fmt.Errorf("repository.SignUp %w", err)
+		return nil, fmt.Errorf("repository.SendMessage: %w", err)
 	}
-
 	return &api.SignUpNoContent{}, nil
 }
 
@@ -148,16 +146,16 @@ func (ur *UserRepo) UpdateUser(ctx context.Context, userId string, user models.U
 // 	return user, nil
 // }
 
-func (ur *UserRepo) CheckUser(ctx context.Context, userId string) (bool, error) {
+func (ur *UserRepo) CheckUserByEmail(ctx context.Context, email string) (bool, error) {
 	var exists bool
 
-	existsQuery, args, err := sq.Select("exists(select 1 from users where user_id = ?)", userId).
+	existsQuery, _, err := sq.Select("EXISTS(SELECT 1 FROM users WHERE email = ?)").
 		ToSql()
 	if err != nil {
 		return false, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	err = ur.db.DB.QueryRowContext(ctx, existsQuery, args...).Scan(&exists)
+	err = ur.db.DB.QueryRowContext(ctx, existsQuery, email).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to execute query: %w", err)
 	}
