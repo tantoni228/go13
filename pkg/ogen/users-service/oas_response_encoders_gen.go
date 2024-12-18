@@ -33,6 +33,11 @@ func encodeChangePasswordResponse(response ChangePasswordRes, w http.ResponseWri
 
 		return nil
 
+	case *ChangePasswordForbidden:
+		w.WriteHeader(403)
+
+		return nil
+
 	case *InternalErrorResponse:
 		w.WriteHeader(500)
 

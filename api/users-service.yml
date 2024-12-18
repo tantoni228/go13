@@ -112,6 +112,8 @@ paths:
           $ref: "#/components/responses/invalidInputResponse"
         "401":
           $ref: "#/components/responses/unauthenticatedResponse"
+        "403":
+          description: invalid old_password
         "500":
           $ref: "#/components/responses/internalErrorResponse"
 

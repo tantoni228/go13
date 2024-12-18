@@ -57,6 +57,9 @@ func decodeChangePasswordResponse(resp *http.Response) (res ChangePasswordRes, _
 	case 401:
 		// Code 401.
 		return &UnauthenticatedResponse{}, nil
+	case 403:
+		// Code 403.
+		return &ChangePasswordForbidden{}, nil
 	case 500:
 		// Code 500.
 		return &InternalErrorResponse{}, nil

@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Port        int             `yaml:"server_port" env:"SERVER_PORT" env-default:"8080"`
 	LogLevel    string          `yaml:"log_level" env:"LOG_LEVEL" env-default:"INFO"`
+	JWTSecret   string          `yaml:"jwt_secret" env:"JWT_SECRET"`
 	PostgresCfg postgres.Config `yaml:"postgres"`
 }
 

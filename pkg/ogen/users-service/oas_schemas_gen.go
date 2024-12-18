@@ -16,6 +16,11 @@ func (s *BearerAuth) SetToken(val string) {
 	s.Token = val
 }
 
+// ChangePasswordForbidden is response for ChangePassword operation.
+type ChangePasswordForbidden struct{}
+
+func (*ChangePasswordForbidden) changePasswordRes() {}
+
 // ChangePasswordNoContent is response for ChangePassword operation.
 type ChangePasswordNoContent struct{}
 

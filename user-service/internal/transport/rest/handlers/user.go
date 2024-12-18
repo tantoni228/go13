@@ -3,103 +3,108 @@ package handlers
 import (
 	"context"
 	"errors"
-
-	"go13/user-service/internal/service"
 	"go13/pkg/logger"
 	api "go13/pkg/ogen/users-service"
+	"go13/user-service/internal/dto"
 	"go13/user-service/internal/models"
+	"go13/user-service/internal/transport/rest/auth"
 
 	"go.uber.org/zap"
 )
 
-
-type UserHandler struct {
-	service *service.UserService
+type UsersService interface {
+	ChangePassword(ctx context.Context, userId string, input dto.ChangePasswordInput) error
+	GetUserById(ctx context.Context, userId string) (dto.UserInfo, error)
+	UpdateMe(ctx context.Context, userId string, input dto.UpdateMeInput) (dto.UserInfo, error)
 }
 
-func NewUserHandler(srv *service.UserService) *UserHandler {
-	return &UserHandler{service: srv}
+type UsersHandler struct {
+	usersService UsersService
 }
 
-func (uh *UserHandler) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
-	UserInfo := models.User{
-		Username: req.GetUsername(),
-		Email:    models.Email(req.GetEmail()),
-		Password: models.Password(req.GetUsername()),
+func NewUsersHandler(usersService UsersService) *UsersHandler {
+	return &UsersHandler{
+		usersService: usersService,
 	}
-
-	_, err := uh.service.SignUp(ctx, &api.SignUpReq{Email: api.Email(UserInfo.Email),
-		Username: string(UserInfo.Username), Password: api.Password(UserInfo.Password)})
-	if err != nil {
-		if errors.Is(err, models.ErrEmailAlreadyExisting) || errors.Is(err, models.ErrUsernameAlreadyExisting) {
-			return &api.SignUpConflict{}, nil
-		}
-		logger.FromCtx(ctx).Error("signing up", zap.Error(err))
-		return &api.InternalErrorResponse{}, err
-	}
-	return &api.SignUpNoContent{}, nil
 }
 
-func (uh *UserHandler) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
-	LogInInfo := models.User{
-		Email:    models.Email(req.GetEmail()),
-		Password: models.Password(req.GetPassword()),
-	}
-
-	user, err := uh.service.SignIn(ctx, &api.SignInReq{Email: api.Email(LogInInfo.Email),
-		Password: api.Password(LogInInfo.Password)})
-	if err != nil {
-		if errors.Is(err, models.ErrUsernameNotFound) || errors.Is(err, models.ErrPasswordIsIncorrect) {
-			return &api.SignInUnauthorized{}, nil
-		}
-		logger.FromCtx(ctx).Error("signing in", zap.Error(err))
-		return &api.InternalErrorResponse{}, nil
-	}
-
-	return user, nil
-}
-
-func (uh *UserHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-	resp, err := uh.service.UserRepo.ChangePassword(ctx, &api.ChangePasswordReq{
-		OldPassword: req.GetOldPassword(),
-		NewPassword: req.GetNewPassword(),
+// ChangePassword implements changePassword operation.
+//
+// Change password.
+//
+// POST /users/me/change-password
+func (uh *UsersHandler) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
+	err := uh.usersService.ChangePassword(ctx, auth.UserIdFromCtx(ctx), dto.ChangePasswordInput{
+		OldPassword: string(req.GetOldPassword()),
+		NewPassword: string(req.GetNewPassword()),
 	})
 	if err != nil {
-		logger.FromCtx(ctx).Error("changing password", zap.Error(err))
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			return &api.ChangePasswordForbidden{}, nil
+		}
+		logger.FromCtx(ctx).Error("change password", zap.Error(err))
 		return &api.InternalErrorResponse{}, nil
 	}
-	return resp, nil
+
+	return &api.ChangePasswordNoContent{}, nil
 }
 
-// func (uh *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
-// 	resp, err := uh.service.UserRepo.GetUserById(ctx, params)
-// 	if err != nil {
-// 		if errors.Is(err, models.ErrIDNotFound) {
-// 			return &api.UserNotFoundResponse{}, nil // используем правильный тип ответа
-// 		}
-// 		logger.FromCtx(ctx).Error("getting user by id", zap.Error(err))
-// 		return &api.InternalErrorResponse{}, nil
-// 	}
-
-// 	return resp, nil
-// }
-
-// CheckToken implements api.Handler.
-func (h *UserHandler) CheckToken(ctx context.Context) (api.CheckTokenRes, error) {
-	panic("unimplemented")
+// GetMe implements getMe operation.
+//
+// Get user info by token.
+//
+// GET /users/me
+func (uh *UsersHandler) GetMe(ctx context.Context) (api.GetMeRes, error) {
+	userInfo, err := uh.usersService.GetUserById(ctx, auth.UserIdFromCtx(ctx))
+	if err != nil {
+		logger.FromCtx(ctx).Error("get me", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+	return &api.User{
+		ID:       api.UserId(userInfo.Id),
+		Username: userInfo.Username,
+		Bio:      userInfo.Bio,
+	}, nil
 }
 
-// GetMe implements api.Handler.
-func (h *UserHandler) GetMe(ctx context.Context) (api.GetMeRes, error) {
-	panic("unimplemented")
+// GetUserById implements getUserById operation.
+//
+// Get user by id.
+//
+// GET /users/{userId}
+func (uh *UsersHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
+	userInfo, err := uh.usersService.GetUserById(ctx, string(params.UserId))
+	if err != nil {
+		if errors.Is(err, models.ErrUserNotFound) {
+			return &api.UserNotFoundResponse{}, nil
+		}
+		logger.FromCtx(ctx).Error("get user by id", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+	return &api.User{
+		ID:       api.UserId(userInfo.Id),
+		Username: userInfo.Username,
+		Bio:      userInfo.Bio,
+	}, nil
 }
 
-// GetUserById implements api.Handler.
-func (h *UserHandler) GetUserById(ctx context.Context, params api.GetUserByIdParams) (api.GetUserByIdRes, error) {
-	panic("unimplemented")
-}
-
-// UpdateMe implements api.Handler.
-func (h *UserHandler) UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error) {
-	panic("unimplemented")
+// UpdateMe implements updateMe operation.
+//
+// Update user info.
+//
+// PUT /users/me
+func (uh *UsersHandler) UpdateMe(ctx context.Context, req *api.UserInput) (api.UpdateMeRes, error) {
+	userInfo, err := uh.usersService.UpdateMe(ctx, auth.UserIdFromCtx(ctx), dto.UpdateMeInput{
+		Username: req.GetUsername(),
+		Bio:      req.GetBio(),
+	})
+	if err != nil {
+		logger.FromCtx(ctx).Error("update me", zap.Error(err))
+		return &api.InternalErrorResponse{}, nil
+	}
+	return &api.User{
+		ID:       api.UserId(userInfo.Id),
+		Username: userInfo.Username,
+		Bio:      userInfo.Bio,
+	}, nil
 }

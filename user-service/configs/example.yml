@@ -1,8 +1,9 @@
 server_port: 8080
 log_level: debug
+jwt_secret: jwt_secret
 postgres:
   host: localhost
   port: 5432
-  db: chats
-  user: user_service
+  db: users
+  user: users_service
   password: secret

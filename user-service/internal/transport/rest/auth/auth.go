@@ -10,6 +10,7 @@ import (
 )
 
 type userIdCtxKey struct{}
+type tokenCtxKey struct{}
 
 type jwtClaims struct {
 	jwt.RegisteredClaims
@@ -25,24 +26,31 @@ func NewSecurityHandler() *SecurityHandler {
 }
 
 func (s *SecurityHandler) HandleBearerAuth(ctx context.Context, _ api.OperationName, auth api.BearerAuth) (context.Context, error) {
-    var claims jwtClaims
-    _, err := jwt.ParseWithClaims(auth.GetToken(), &claims, nil)
-    if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
-        return ctx, err
-    }
+	var claims jwtClaims
+	_, err := jwt.ParseWithClaims(auth.GetToken(), &claims, nil)
+	if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
+		return ctx, err
+	}
 
-    // Проверка, является ли UserId корректным UUID
-    userId := claims.UserId
-    if _, err := uuid.Parse(userId); err != nil {
-        return ctx, err
-    }
+	// Проверка, является ли UserId корректным UUID
+	userId := claims.UserId
+	if _, err := uuid.Parse(userId); err != nil {
+		return ctx, err
+	}
 
-    ctx = context.WithValue(ctx, userIdCtxKey{}, userId)
-    return ctx, nil
+	ctx = context.WithValue(ctx, userIdCtxKey{}, userId)
+	ctx = context.WithValue(ctx, tokenCtxKey{}, auth.GetToken())
+	return ctx, nil
 }
 
 // UserIdFromCtx returns userId associated with context.
 // If no userId is associated, the empty string is returned.
 func UserIdFromCtx(ctx context.Context) string {
 	return ctx.Value(userIdCtxKey{}).(string)
+}
+
+// TokenFromCtx returns jwt token associated with context.
+// If no jwt token is associated, the empty string is returned.
+func TokenFromCtx(ctx context.Context) string {
+	return ctx.Value(tokenCtxKey{}).(string)
 }

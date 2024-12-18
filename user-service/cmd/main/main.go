@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"go13/pkg/logger"
 	"go13/pkg/postgres"
 	"go13/user-service/internal/config"
-	repo "go13/user-service/internal/repo/postgres"
+	pgrepo "go13/user-service/internal/repo/postgres"
 	"go13/user-service/internal/service"
 	"go13/user-service/internal/transport/rest/handlers"
 	"log"
@@ -49,17 +48,18 @@ func main() {
 
 	db, err := postgres.Get(ctx, cfg.PostgresCfg)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		l.Fatal("postgres.Get", zap.Error(err))
 	}
 
-	repo := repo.NewUsersRepo(db)
+	usersRepo := pgrepo.NewUsersRepo(db)
 
-	srv := service.NewUserService(repo)
+	authService := service.NewAuthService(usersRepo, cfg.JWTSecret)
+	usersService := service.NewUsersService(usersRepo)
 
-	userHandler := handlers.NewUserHandler(srv)
+	authHandler := handlers.NewAuthHandler(authService)
+	usersHandler := handlers.NewUsersHandler(usersService)
 
-	server, err := server.NewServer(userHandler, l, cfg.Port)
+	server, err := server.NewServer(authHandler, usersHandler, l, cfg.Port)
 	if err != nil {
 		l.Fatal("error while init server", zap.Error(err))
 	}

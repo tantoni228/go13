@@ -17,23 +17,19 @@ type Server struct {
 }
 
 type handler struct {
-	*handlers.UserHandler
-}
-
-type securityHandler struct{}
-
-// Don`t check security
-func (s *securityHandler) HandleBearerAuth(ctx context.Context, _ api.OperationName, _ api.BearerAuth) (context.Context, error) {
-	return ctx, nil
+	*handlers.AuthHandler
+	*handlers.UsersHandler
 }
 
 func NewServer(
-	usersHandler *handlers.UserHandler,
+	authHandler *handlers.AuthHandler,
+	usersHandler *handlers.UsersHandler,
 	l *zap.Logger,
 	port int,
 ) (*Server, error) {
 
 	apiSrv, err := api.NewServer(&handler{
+		authHandler,
 		usersHandler,
 	}, auth.NewSecurityHandler())
 	if err != nil {

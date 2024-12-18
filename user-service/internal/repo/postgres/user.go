@@ -3,162 +3,141 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-
-	api "go13/pkg/ogen/users-service"
 	"go13/pkg/postgres"
+	"go13/user-service/internal/dto"
 	"go13/user-service/internal/models"
-	"go13/user-service/internal/transport/rest/auth"
 
+	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
-type UserRepo struct {
-	db *postgres.Postgres
+type UsersRepo struct {
+	db *sqlx.DB
+	sq squirrel.StatementBuilderType
 }
 
-func NewUsersRepo(pg *postgres.Postgres) *UserRepo {
-	return &UserRepo{db: pg}
-}
-
-func GenerateRandomUUID() string {
-	id := uuid.New()
-	return id.String()
-}
-
-func (ur *UserRepo) SignUp(ctx context.Context, req *api.SignUpReq) (api.SignUpRes, error) {
-	_, err := sq.Insert("users").
-		Columns("id", "user_name", "user_email", "user_password").
-		Values(uuid.New(), req.Username, req.Email, req.Password).
-		Suffix("returning *").
-		PlaceholderFormat(sq.Dollar).
-		RunWith(ur.db.DB.DB).
-		Exec()
-	if err != nil {
-		return nil, fmt.Errorf("repository.SendMessage: %w", err)
+func NewUsersRepo(pg *postgres.Postgres) *UsersRepo {
+	return &UsersRepo{
+		db: pg.DB,
+		sq: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
-	return &api.SignUpNoContent{}, nil
 }
 
-func (ur *UserRepo) SignIn(ctx context.Context, req *api.SignInReq) (api.SignInRes, error) {
-	var res api.SignInRes
+func (ur *UsersRepo) AddUser(ctx context.Context, user models.User) (models.User, error) {
+	op := "UsersRepo.AddUser"
 
-	// Prepare the select query to find the user
-	sqlQuery, args, err := sq.Select("user_id", "user_name").
-		From("users").
-		Where(sq.Eq{"user_email": req.Email, "user_password": req.Password}).
+	sql, args, err := ur.sq.
+		Insert("users").
+		Columns("username", "email", "hashed_password", "bio").
+		Values(user.Username, user.Email, user.HashedPassword, user.Bio).
+		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		return res, fmt.Errorf("failed to build select query: %w", err)
+		return models.User{}, fmt.Errorf("%s: build query: %w", op, err)
 	}
 
-	var UserId, Username int
-	err = ur.db.DB.QueryRowContext(ctx, sqlQuery, args...).Scan(&UserId, &Username)
+	var createduser models.User
+	err = ur.db.GetContext(ctx, &createduser, sql, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return res, fmt.Errorf("invalid credentials")
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23505":
+				return models.User{}, models.ErrEmailIsTaken
+			}
 		}
-		return res, fmt.Errorf("failed to execute select query: %w", err)
+		return models.User{}, fmt.Errorf("%s: GetContext: %w", op, err)
 	}
 
-	return res, nil
+	return createduser, nil
 }
 
-func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (api.ChangePasswordRes, error) {
-	var res api.ChangePasswordRes
+func (ur *UsersRepo) GetUserById(ctx context.Context, userId string) (models.User, error) {
+	op := "UsersRepo.GetUserById"
 
-	updateQuery, args, err := sq.Update("users").
-		Set("user_password", req.NewPassword).
-		Where(sq.Eq{"user_id": auth.UserIdFromCtx(ctx)}).
+	query, args, err := ur.sq.
+		Select("*").
+		From("users").
+		Where(sq.Eq{"id": userId}).
 		ToSql()
 	if err != nil {
-		return res, fmt.Errorf("failed to build update query: %w", err)
+		return models.User{}, fmt.Errorf("%s: build query: %w", op, err)
 	}
 
-	// Execute the update query
-	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
+	var user models.User
+	err = ur.db.GetContext(ctx, &user, query, args...)
 	if err != nil {
-		return res, fmt.Errorf("failed to execute update query: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, models.ErrUserNotFound
+		}
 	}
 
-	return res, nil
+	return user, nil
 }
 
-// func (ur *UserRepo) ChangePassword(ctx context.Context, req *api.ChangePasswordReq, UserId string) (models.Password, error) {
+func (ur *UsersRepo) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	op := "UsersRepo.GetUserById"
 
-// 	updateQuery, args, err := sq.Update("users").
-// 		Set("user_password", req.NewPassword).
-// 		Where(sq.Eq{"user_id": UserId}).
-// 		ToSql()
-// 	if err != nil {
-// 		return models.Password(req.OldPassword), fmt.Errorf("failed to build update query: %w", err)
-// 	}
-
-// 	// Execute the update query
-// 	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
-// 	if err != nil {
-// 		return models.Password(req.OldPassword), fmt.Errorf("failed to execute update query: %w", err)
-// 	}
-
-// 	return models.Password(req.NewPassword), nil
-// }
-
-func (ur *UserRepo) UpdateUser(ctx context.Context, userId string, user models.User) error {
-	updateQuery, args, err := sq.Update("users").
-		Set("user_name", user.Username).
-		Set("user_email", user.Email).
-		Set("user_password", user.Password).
-		Set("user_bio", user.Bio).
-		Where(sq.Eq{"user_id": userId}).
+	query, args, err := ur.sq.
+		Select("*").
+		From("users").
+		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("failed to build query: %w", err)
+		return models.User{}, fmt.Errorf("%s: build query: %w", op, err)
 	}
 
-	_, err = ur.db.DB.ExecContext(ctx, updateQuery, args...)
+	var user models.User
+	err = ur.db.GetContext(ctx, &user, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to execute query: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, models.ErrUserNotFound
+		}
 	}
 
-	return nil
+	return user, nil
 }
 
-// func (ur *UserRepo) GetUserById(ctx context.Context, userId string) (models.User, error) {
-// 	var user models.User
+func (ur *UsersRepo) UpdateUser(ctx context.Context, userId string, input dto.UpdateUserInput) (models.User, error) {
+	op := "UserRepo.UpdateUser"
 
-// 	sqlQuery, args, err := sq.Select("user_id", "user_name", "user_email", "user_password", "user_bio").
-// 		From("users").
-// 		Where(sq.Eq{"user_id": userId}).
-// 		ToSql()
-// 	if err != nil {
-// 		return user, fmt.Errorf("failed to build query: %w", err)
-// 	}
-
-// 	err = ur.db.DB.QueryRowContext(ctx, sqlQuery, args...).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Bio)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return user, models.ErrIDNotFound
-// 		}
-// 		return user, fmt.Errorf("failed to execute query: %w", err)
-// 	}
-
-// 	return user, nil
-// }
-
-func (ur *UserRepo) CheckUserByEmail(ctx context.Context, email string) (bool, error) {
-	var exists bool
-
-	existsQuery, _, err := sq.Select("EXISTS(SELECT 1 FROM users WHERE email = ?)").
+	builder := ur.sq.Update("users")
+	if input.Username.IsSet() {
+		builder = builder.Set("username", input.Username.GetValue())
+	}
+	if input.Email.IsSet() {
+		builder = builder.Set("email", input.Email.GetValue())
+	}
+	if input.HashedPassword.IsSet() {
+		builder = builder.Set("hashed_password", input.HashedPassword.GetValue())
+	}
+	if input.Bio.IsSet() {
+		builder = builder.Set("bio", input.Bio.GetValue())
+	}
+	query, args, err := builder.
+		Where(sq.Eq{"id": userId}).
+		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("failed to build query: %w", err)
+		return models.User{}, fmt.Errorf("%s: build query: %w", op, err)
 	}
 
-	err = ur.db.DB.QueryRowContext(ctx, existsQuery, email).Scan(&exists)
+	var user models.User
+	err = ur.db.GetContext(ctx, &user, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("failed to execute query: %w", err)
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23505":
+				return models.User{}, models.ErrEmailIsTaken
+			}
+		}
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, models.ErrUserNotFound
+		}
 	}
 
-	return exists, nil
+	return user, nil
 }
