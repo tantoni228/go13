@@ -171,7 +171,7 @@ components:
               token:
                 type: string
             required:
-              - message
+              - token
 
     userResponse:
       description: User info
