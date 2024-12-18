@@ -122,7 +122,6 @@ paths:
       x-ogen-operation-group: Users
       tags:
         - users
-      security: []
       parameters:
         - $ref: "#/components/parameters/userId"
       responses:

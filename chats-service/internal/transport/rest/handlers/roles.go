@@ -45,12 +45,6 @@ func NewRolesHandler(rolesService RolesService, accessService AccessService) *Ro
 // GET /roles/check-access
 func (rh *RolesHandler) CheckAccess(ctx context.Context, params api.CheckAccessParams) (api.CheckAccessRes, error) {
 	userId := auth.UserIdFromCtx(ctx)
-	logger.FromCtx(ctx).Debug(
-		"check access",
-		zap.String("uri", params.XTargetURI),
-		zap.String("method", string(params.XTargetMethod)),
-		zap.String("user_id", userId),
-	)
 	u, err := url.ParseRequestURI(params.XTargetURI)
 	if err != nil {
 		return &api.InvalidInputResponse{
