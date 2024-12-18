@@ -7,10 +7,15 @@ import (
 	"go13/user-service/internal/dto"
 	"go13/user-service/internal/models"
 	"go13/user-service/internal/repo"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	tokenExpirationTime = time.Hour * 24 * 30
 )
 
 type AuthService struct {
@@ -61,6 +66,10 @@ func (as *AuthService) SignIn(ctx context.Context, input dto.SignInInput) (dto.S
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss":     "user_service",
+		"exp":     time.Now().Add(tokenExpirationTime).Unix(),
+		"iat":     time.Now().Unix(),
+		"nbf":     time.Now().Unix(),
 		"user_id": user.Id,
 	})
 
@@ -80,8 +89,12 @@ func (as *AuthService) CheckToken(ctx context.Context, tokenString string) error
 			return nil, errors.New("unexpected signing method")
 		}
 		return []byte(as.jwtSecret), nil
-	})
+	}, jwt.WithExpirationRequired())
 	if err != nil {
+		return models.ErrInvalidToken
+	}
+
+	if !token.Valid {
 		return models.ErrInvalidToken
 	}
 
