@@ -1,0 +1,60 @@
+stages:
+  - build
+  - test
+
+default:
+  image: golang:alpine
+
+build user serice:
+  stage: build
+  script:
+    - go mod tidy
+    - CGO_ENABLED=0 go build -o /bin/user-service ./user-service/cmd/main/main.go
+
+test user service:
+  stage: test
+  needs:
+    - build user serice
+  allow_failure: true
+  script:
+    - go mod tidy
+    - go test -coverprofile=cover.out ./user-service/...
+    - apk add bc
+    - coverage=$(go tool cover -func=cover.out | grep total | awk '{print $3}' | sed 's/%//')
+    - if [ $(echo "$coverage < 30" | bc -l) -eq 1 ]; then echo "Coverage is below 30%, failing the job"; exit 1; fi
+
+build chats serice:
+  stage: build
+  script:
+    - go mod tidy
+    - CGO_ENABLED=0 go build -o /bin/chats-service ./chats-service/cmd/main/main.go
+
+test chats service:
+  stage: test
+  needs:
+    - build chats serice
+  allow_failure: true
+  script:
+    - go mod tidy
+    - go test -coverprofile=cover.out ./chats-service/...
+    - apk add bc
+    - coverage=$(go tool cover -func=cover.out | grep total | awk '{print $3}' | sed 's/%//')
+    - if [ $(echo "$coverage < 30" | bc -l) -eq 1 ]; then echo "Coverage is below 30%, failing the job"; exit 1; fi
+
+build messages serice:
+  stage: build
+  script:
+    - go mod tidy
+    - CGO_ENABLED=0 go build -o /bin/messages-service ./messages-service/cmd/main/main.go
+
+test messages service:
+  stage: test
+  needs:
+    - build messages serice
+  allow_failure: true
+  script:
+    - go mod tidy
+    - go test -coverprofile=cover.out ./messages-service/...
+    - apk add bc
+    - coverage=$(go tool cover -func=cover.out | grep total | awk '{print $3}' | sed 's/%//')
+    - if [ $(echo "$coverage < 30" | bc -l) -eq 1 ]; then echo "Coverage is below 30%, failing the job"; exit 1; fi
